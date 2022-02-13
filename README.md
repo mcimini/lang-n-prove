@@ -73,13 +73,16 @@ To complete those proofs, replace the "skip." instruction in
 
 Example: Lang-n-Prove generates stlc_cbv.thm with the following Type Preservation theorem: 
 <br />
-<br />
 
 Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
 IH0 : induction on 1. intros Main Step. Typing0: case Main.  
-<br />
+<br/>
+...
+<br/>
 Mabs: case Step.   
-<br />
+<br/>
+...
+<!--
 <mark>Mapp: case Step.  skip.</mark>  
 <br />
 apply IH0 to Typing0 Mapp.  search.  
@@ -89,14 +92,23 @@ apply IH0 to Typing1 Mapp.  search.
 backchain Error-types-all.  
 <br />
 backchain Error-types-all. 
+-->
+<br/>
 
 Replace "skip." as shown below. 
-<br />
 <br />
 
 Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
 IH0 : induction on 1. intros Main Step. Typing0: case Main.  <br />
-Mabs: case Step.   
+Mabs: case Step.  
+<br/>
+...
+<br/>
+app: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.
+<br/>
+...
+
+<!-- 
 <br />
 <mark>Mapp: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.</mark>  <br />
 apply IH0 to Typing0 Mapp.  search.  
@@ -106,7 +118,7 @@ apply IH0 to Typing1 Mapp.  search.
 backchain Error-types-all.
 <br />
 backchain Error-types-all. 
-
+-->
 
 
 
