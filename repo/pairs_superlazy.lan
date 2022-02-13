@@ -1,0 +1,17 @@
+Expression E ::= x | (pair E E) | (fst E) | (snd E)
+Type T ::= (times T T)
+Value V ::= (pair E1 E2)
+Error ::= 
+Context C ::= [] | (fst C) | (snd C)
+
+Gamma |- (pair E1 E2) : (times T1 T2) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2.
+
+Gamma |- (fst E) : T1 <== Gamma |- E : (times T1 T2).
+
+(fst (pair E1 E2)) --> E1.
+
+Gamma |- (snd E) : T2 <== Gamma |- E : (times T1 T2).
+
+(snd (pair E1 E2)) --> E2.
+
+

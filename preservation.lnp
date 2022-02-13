@@ -1,0 +1,12 @@
+Theorem Type-preservation : 
+	forall e1, forall e2, forall typ, (Main : typeOf (empty) e1 typ) -> (Step : step e1 e2) -> (_ :  typeOf (empty) e2 typ). 
+Proof. 
+Typing_(0): induction on Main.  
+for each e in Expression: 
+	M_(e) : case Step. 
+	for each tg in targetsFromValue(e): if containsSubstitution(tg) then skip else search endfor. 
+	for each tg in targetsFromOp(e): if containsSubstitution(tg) then skip else _ : case Typing_(0). search endfor. 
+	for each i in contextualArgs(e): _ : apply IH0 to Typing_(i) M_(e). search endfor.
+	for each i in contextualArgs(e): if isErrorHandler(e) and (i = 0) then noOp else backchain on Error-types-all endfor
+endfor
+

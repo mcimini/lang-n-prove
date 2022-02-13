@@ -1,0 +1,75 @@
+Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (let E (x)E) | (letrec T (x)E (x)E) | (myerror ) | (filter E E) 
+Type T ::= (arrow T T) | (int ) | (bool ) | (list T) 
+Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2) 
+Error ::= (myerror)
+Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (let C e) | (fix C) | (filter C e) | (filter v C) 
+	
+
+Gamma |- (filter E1 E2) : (list T) <== Gamma |- E1 : (list T) /\ Gamma |- E2 : (arrow T (bool)).
+
+(filter (emptyList ) V) -->  (emptyList ).
+
+(filter (cons V1 V2) V3) --> (if (app V3 V1) (cons V1 (filter V2 V3))  (filter V2 V3)).
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (zero ) : (int ).
+
+Gamma |- (succ E) : (int ) <== Gamma |- E : (int ).
+
+Gamma |- (tt ) : (bool ).
+
+Gamma |- (ff ) : (bool ).
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) V) --> R[V/x] <== value V.
+
+Gamma |- (let E R) : T2 <== Gamma |- E : T1 /\ Gamma, x : T1 |- R : T2.
+
+(let V R) --> R[V/x] <== value V.
+
+Gamma |- (pred E) : (int ) <== Gamma |- E : (int ).
+
+(pred (zero )) --> (myerror).
+
+(pred (succ E)) --> E.
+
+Gamma |- (isZero E) : (bool ) <== Gamma |- E : (int ).
+
+(isZero (zero )) --> (tt).
+
+(isZero (succ E)) --> (ff).
+
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+
+(if (tt ) E1 E2) --> E1.
+
+(if (ff ) E1 E2) --> E2.
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myerror).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myerror).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
+
+(fix E) --> (app E (fix E)) <== value E.
+
+Gamma |- (letrec T1 R1 R2) : T2 <== Gamma, x : T1 |- R1 : T1 /\ Gamma, x : T1 |- R2 : T2.
+
+(letrec T1 R1 R2) --> R2[(fix (abs T1 R1))/x].
+
+Gamma |- (myerror) : T.
+

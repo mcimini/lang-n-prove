@@ -1,0 +1,41 @@
+Expression E ::= x | (abs T (x)E) | (inl E) | (inr E) | (app E E) | (case E (x)E (x)E) | (emptyList ) | (cons E E) | (head E) | (tail E) | (myError )
+Type T ::= (arrow T T) | (sum T T) | (list T)
+Value V ::= (emptyList ) | (cons V1 V2) | (abs T1 R2) | (inl V1) | (inr V1)
+Error ::= (myError )
+Context C ::= [] | (inl C) | (inr C) | (app C e) | (app e C) | (case C e e) | (cons C e) | (cons v C) | (head C) | (tail C)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (inl E) : (sum T1 T2) <== Gamma |- E : T1.
+
+Gamma |- (inr E) : (sum T1 T2) <== Gamma |- E : T2.
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) E) --> R[E/x].
+
+Gamma |- (case EE R1 R2) : T <== Gamma |- EE : (sum T1 T2) /\ Gamma, x : T1 |- R1 : T /\ Gamma, x : T2 |- R2 : T.
+
+(case (inl V) R1 R2) --> R1[V/x] <== value V.
+
+(case (inr V) R1 R2) --> R2[V/x] <== value V.
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myError ).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myError ).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (myError ) : T.
+
+

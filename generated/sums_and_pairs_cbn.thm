@@ -1,0 +1,62 @@
+Specification "sums_and_pairs_cbn". 
+
+Define progresses : term -> prop by
+	 progresses E := {value E} ;
+	 progresses E := {error E} ;
+	 progresses E := exists E', {step E E'}.
+
+Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
+ skip. 
+
+Theorem Canonical-form-arrow: forall e, forall T1, forall T2, {typeOf e (arrow T1 T2)} -> {value e} -> exists T1, exists R2, e = (abs T1 R2). 
+intros Main ValHyp.  case Main.  search.    Mapp: case ValHyp.  Mcase: case ValHyp.   Mfst: case ValHyp.  Msnd: case ValHyp. 
+
+
+Theorem Canonical-form-sum: forall e, forall T1, forall T2, {typeOf e (sum T1 T2)} -> {value e} -> exists V1, e = (inl V1) /\ {value V1} \/ exists V1, e = (inr V1) /\ {value V1}. 
+intros Main ValHyp.  case Main.   Minl: case ValHyp.  search.  Minr: case ValHyp.  search.  Mapp: case ValHyp.  Mcase: case ValHyp.   Mfst: case ValHyp.  Msnd: case ValHyp. 
+
+
+Theorem Canonical-form-times: forall e, forall T1, forall T2, {typeOf e (times T1 T2)} -> {value e} -> exists V1, exists V2, e = (pair V1 V2) /\ {value V1} /\ {value V2}. 
+intros Main ValHyp.  case Main.     Mapp: case ValHyp.  Mcase: case ValHyp.  Mpair: case ValHyp.  search.  Mfst: case ValHyp.  Msnd: case ValHyp. 
+
+
+Theorem Progress-abs: forall ty, forall T1, forall E2, {typeOf (abs T1 E2) ty} -> true -> progresses (abs T1 E2). 
+intros Main.  search.  
+
+
+Theorem Progress-inl: forall ty, forall E1, {typeOf (inl E1) ty} -> progresses E1 -> progresses (inl E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  search.  search.  search. 
+
+
+Theorem Progress-inr: forall ty, forall E1, {typeOf (inr E1) ty} -> progresses E1 -> progresses (inr E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  search.  search.  search. 
+
+
+Theorem Progress-app: forall ty, forall E1, forall E2, {typeOf (app E1 E2) ty} -> progresses E1 -> progresses E2 -> progresses (app E1 E2). 
+intros Main Prgs0 Prgs1.  ProgressHyp0: case Prgs0.  ProgressHyp1: case Prgs1.  Typing0: case Main.  Canonical: apply Canonical-form-arrow to Typing0 ProgressHyp0.  search.  search.  search.  search.  search. 
+
+
+Theorem Progress-case: forall ty, forall E1, forall E2, forall E3, {typeOf (case E1 E2 E3) ty} -> progresses E1 -> progresses (case E1 E2 E3). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-sum to Typing0 ProgressHyp0.  case Canonical.  search.  search.  search.  search. 
+
+
+Theorem Progress-pair: forall ty, forall E1, forall E2, {typeOf (pair E1 E2) ty} -> progresses E1 -> progresses E2 -> progresses (pair E1 E2). 
+intros Main Prgs0 Prgs1.  ProgressHyp0: case Prgs0.  ProgressHyp1: case Prgs1.  search.  search.  search.  search.  search. 
+
+
+Theorem Progress-fst: forall ty, forall E1, {typeOf (fst E1) ty} -> progresses E1 -> progresses (fst E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-snd: forall ty, forall E1, {typeOf (snd E1) ty} -> progresses E1 -> progresses (snd E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-thm: forall e, forall typ, {typeOf e typ} -> progresses e. 
+IH0 : induction on 1. intros Main. Typing0: case Main.  backchain Progress-abs.  apply IH0 to Typing0.  backchain Progress-inl.  apply IH0 to Typing0.  backchain Progress-inr.  apply IH0 to Typing0.  apply IH0 to Typing1.  backchain Progress-app.  apply IH0 to Typing0.  backchain Progress-case.  apply IH0 to Typing0.  apply IH0 to Typing1.  backchain Progress-pair.  apply IH0 to Typing0.  backchain Progress-fst.  apply IH0 to Typing0.  backchain Progress-snd. 
+
+
+Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
+IH0 : induction on 1. intros Main Step. Typing0: case Main.  Mabs: case Step.   Minl: case Step.  apply IH0 to Typing0 Minl.  search.  backchain Error-types-all.  Minr: case Step.  apply IH0 to Typing0 Minr.  search.  backchain Error-types-all.  Mapp: case Step.  skip.  apply IH0 to Typing0 Mapp.  search.  apply IH0 to Typing1 Mapp.  search.  backchain Error-types-all.  backchain Error-types-all.  Mcase: case Step.  skip.  skip.  apply IH0 to Typing0 Mcase.  search.  backchain Error-types-all.  Mpair: case Step.  apply IH0 to Typing0 Mpair.  search.  apply IH0 to Typing1 Mpair.  search.  backchain Error-types-all.  backchain Error-types-all.  Mfst: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mfst.  search.  backchain Error-types-all.  Msnd: case Step.  case Typing0.  search.  apply IH0 to Typing0 Msnd.  search.  backchain Error-types-all. 
+
+

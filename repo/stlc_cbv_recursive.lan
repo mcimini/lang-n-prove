@@ -1,0 +1,19 @@
+Expression E ::= x | (abs T (x)E) | (app E E) | (fold E (X)T) | (unfold E)
+Type T ::= (arrow T T) | (mu (X)T)
+Value V ::= (abs T1 R2) | (fold V1 U2)
+Error ::= 
+Context C ::= [] | (app C e) | (app v C) | (fold C e) | (unfold C)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (fold E R) : (mu R) <== Gamma |- E : R[(mu R)/x].
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) E) --> R[E/x] <== value E.
+
+Gamma |- (unfold E) : R[(mu R)/x] <== Gamma |- E : (mu R).
+
+(unfold (fold V R)) --> V <== value V.
+
+

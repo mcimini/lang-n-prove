@@ -1,0 +1,46 @@
+Specification "tuples_rightToLeft". 
+
+Define progresses : term -> prop by
+	 progresses E := {value E} ;
+	 progresses E := {error E} ;
+	 progresses E := exists E', {step E E'}.
+
+Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
+ skip. 
+
+Theorem Canonical-form-times5: forall e, forall T1, forall T2, forall T3, forall T4, forall T5, {typeOf e (times5 T1 T2 T3 T4 T5)} -> {value e} -> exists V1, exists V2, exists V3, exists V4, exists V5, e = (tuple5 V1 V2 V3 V4 V5) /\ {value V1} /\ {value V2} /\ {value V3} /\ {value V4} /\ {value V5}. 
+intros Main ValHyp.  case Main.  Mtuple5: case ValHyp.  search.  Mselect1: case ValHyp.  Mselect2: case ValHyp.  Mselect3: case ValHyp.  Mselect4: case ValHyp.  Mselect5: case ValHyp. 
+
+
+Theorem Progress-tuple5: forall ty, forall E1, forall E2, forall E3, forall E4, forall E5, {typeOf (tuple5 E1 E2 E3 E4 E5) ty} -> progresses E5 -> progresses E4 -> progresses E3 -> progresses E2 -> progresses E1 -> progresses (tuple5 E1 E2 E3 E4 E5). 
+intros Main Prgs4 Prgs3 Prgs2 Prgs1 Prgs0.  ProgressHyp4: case Prgs4.  ProgressHyp3: case Prgs3.  ProgressHyp2: case Prgs2.  ProgressHyp1: case Prgs1.  ProgressHyp0: case Prgs0.  search.  search.  search.  search.  search.  search.  search.  search.  search.  search.  search. 
+
+
+Theorem Progress-select1: forall ty, forall E1, {typeOf (select1 E1) ty} -> progresses E1 -> progresses (select1 E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times5 to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-select2: forall ty, forall E1, {typeOf (select2 E1) ty} -> progresses E1 -> progresses (select2 E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times5 to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-select3: forall ty, forall E1, {typeOf (select3 E1) ty} -> progresses E1 -> progresses (select3 E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times5 to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-select4: forall ty, forall E1, {typeOf (select4 E1) ty} -> progresses E1 -> progresses (select4 E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times5 to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-select5: forall ty, forall E1, {typeOf (select5 E1) ty} -> progresses E1 -> progresses (select5 E1). 
+intros Main Prgs0.  ProgressHyp0: case Prgs0.  Typing0: case Main.  Canonical: apply Canonical-form-times5 to Typing0 ProgressHyp0.  search.  search.  search. 
+
+
+Theorem Progress-thm: forall e, forall typ, {typeOf e typ} -> progresses e. 
+IH0 : induction on 1. intros Main. Typing0: case Main.  apply IH0 to Typing0.  apply IH0 to Typing1.  apply IH0 to Typing2.  apply IH0 to Typing3.  apply IH0 to Typing4.  backchain Progress-tuple5.  apply IH0 to Typing0.  backchain Progress-select1.  apply IH0 to Typing0.  backchain Progress-select2.  apply IH0 to Typing0.  backchain Progress-select3.  apply IH0 to Typing0.  backchain Progress-select4.  apply IH0 to Typing0.  backchain Progress-select5. 
+
+
+Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
+IH0 : induction on 1. intros Main Step. Typing0: case Main.  Mtuple5: case Step.  apply IH0 to Typing0 Mtuple5.  search.  apply IH0 to Typing1 Mtuple5.  search.  apply IH0 to Typing2 Mtuple5.  search.  apply IH0 to Typing3 Mtuple5.  search.  apply IH0 to Typing4 Mtuple5.  search.  backchain Error-types-all.  backchain Error-types-all.  backchain Error-types-all.  backchain Error-types-all.  backchain Error-types-all.  Mselect1: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mselect1.  search.  backchain Error-types-all.  Mselect2: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mselect2.  search.  backchain Error-types-all.  Mselect3: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mselect3.  search.  backchain Error-types-all.  Mselect4: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mselect4.  search.  backchain Error-types-all.  Mselect5: case Step.  case Typing0.  search.  apply IH0 to Typing0 Mselect5.  search.  backchain Error-types-all. 
+
+

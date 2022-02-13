@@ -1,0 +1,21 @@
+Expression E ::= x | (abs (x)E) | (app E E) | (fix E) | (letrec (x)E (x)E)
+Type T ::= (arrow T T)
+Value V ::= (abs R1)
+Error ::= 
+Context C ::= [] | (app C e) | (app e C) | (fix C)
+
+Gamma |- (abs R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs R) EE) --> R[EE/x].
+
+Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
+
+(fix V) --> (app V (fix V)) <== value V.
+
+Gamma |- (letrec R1 R2) : T2 <== Gamma, x : T1 |- R1 : T1 /\ Gamma, x : T1 |- R2 : T2.
+
+(letrec R1 R2) --> R2[(fix (abs R1))/x].
+
+

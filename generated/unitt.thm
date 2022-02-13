@@ -1,0 +1,26 @@
+Specification "unitt". 
+
+Define progresses : term -> prop by
+	 progresses E := {value E} ;
+	 progresses E := {error E} ;
+	 progresses E := exists E', {step E E'}.
+
+Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
+ skip. 
+
+Theorem Canonical-form-unitType: forall e, {typeOf e (unitType)} -> {value e} -> e = (unit). 
+intros Main ValHyp.  case Main.  search. 
+
+
+Theorem Progress-unit: forall ty, {typeOf (unit) ty} -> true -> progresses (unit). 
+intros Main.  search.  
+
+
+Theorem Progress-thm: forall e, forall typ, {typeOf e typ} -> progresses e. 
+IH0 : induction on 1. intros Main. Typing0: case Main.  backchain Progress-unit. 
+
+
+Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
+IH0 : induction on 1. intros Main Step. Typing0: case Main.  Munit: case Step.  
+
+

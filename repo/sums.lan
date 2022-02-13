@@ -1,0 +1,17 @@
+Expression E ::= x | (inl E) | (inr E) | (case E (x)E (x)E)
+Type T ::= (sum T T)
+Value V ::= (inl V1) | (inr V1)
+Error ::= 
+Context C ::= [] | (inl C) | (inr C) | (case C e e)
+
+Gamma |- (inl E) : (sum T1 T2) <== Gamma |- E : T1.
+
+Gamma |- (inr E) : (sum T1 T2) <== Gamma |- E : T2.
+
+Gamma |- (case EE R1 R2) : T <== Gamma |- EE : (sum T1 T2) /\ Gamma, x : T1 |- R1 : T /\ Gamma, x : T2 |- R2 : T.
+
+(case (inl V) R1 R2) --> R1[V/x] <== value V.
+
+(case (inr V) R1 R2) --> R2[V/x] <== value V.
+
+

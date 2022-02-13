@@ -1,0 +1,30 @@
+Specification "itlc_par". 
+
+Define progresses : term -> prop by
+	 progresses E := {value E} ;
+	 progresses E := {error E} ;
+	 progresses E := exists E', {step E E'}.
+
+Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
+ skip. 
+
+Theorem Canonical-form-arrow: forall e, forall T1, forall T2, {typeOf e (arrow T1 T2)} -> {value e} -> exists R1, e = (abs R1). 
+intros Main ValHyp.  case Main.  search.  Mapp: case ValHyp. 
+
+
+Theorem Progress-abs: forall ty, forall E1, {typeOf (abs E1) ty} -> true -> progresses (abs E1). 
+intros Main.  search.  
+
+
+Theorem Progress-app: forall ty, forall E1, forall E2, {typeOf (app E1 E2) ty} -> progresses E1 -> progresses E2 -> progresses (app E1 E2). 
+intros Main Prgs0 Prgs1.  ProgressHyp0: case Prgs0.  ProgressHyp1: case Prgs1.  Typing0: case Main.  Canonical: apply Canonical-form-arrow to Typing0 ProgressHyp0.  search.  search.  search.  search.  search. 
+
+
+Theorem Progress-thm: forall e, forall typ, {typeOf e typ} -> progresses e. 
+IH0 : induction on 1. intros Main. Typing0: case Main.  backchain Progress-abs.  apply IH0 to Typing0.  apply IH0 to Typing1.  backchain Progress-app. 
+
+
+Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
+IH0 : induction on 1. intros Main Step. Typing0: case Main.  Mabs: case Step.   Mapp: case Step.  skip.  apply IH0 to Typing0 Mapp.  search.  apply IH0 to Typing1 Mapp.  search.  backchain Error-types-all.  backchain Error-types-all. 
+
+

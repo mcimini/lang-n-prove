@@ -1,0 +1,25 @@
+Expression E ::= x | (emptyList ) | (cons E E) | (head E) | (tail E) | (myError )
+Type T ::= (list T)
+Value V ::= (emptyList ) | (cons V1 V2)
+Error ::= (myError )
+Context C ::= [] | (cons C e) | (cons v C) | (head C) | (tail C)
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myError ).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myError ).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (myError ) : T.
+
+

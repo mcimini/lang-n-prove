@@ -1,0 +1,67 @@
+Expression E ::= x | (abs (x)E) | (absT (X)E) | (emptyList ) | (cons E E) | (excValue ) | (tt ) | (ff ) | (app E E) | (appT E T) | (head E) | (tail E) | (if E E E) | (fix E) | (let E (x)E) | (letrec (x)E (x)E) | (try E E) | (raise E)
+Type T ::= (arrow T T) | (all (X)T) | (list T) | (excType ) | (bool )
+Value V ::= (abs R1) | (absT R1) | (emptyList ) | (cons V1 V2) | (excValue ) | (tt ) | (ff )
+Error ::= (raise V1)
+Context C ::= [] | (cons C e) | (cons v C) | (app C e) | (app v C) | (appT C e) | (head C) | (tail C) | (if C e e) | (fix C) | (let C e) | (try C e) | (raise C)
+
+Gamma |- (abs R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (absT R2) : (all R) <== Gamma, X |- R2 : R.
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (excValue ) : (excType ).
+
+Gamma |- (tt ) : (bool ).
+
+Gamma |- (ff ) : (bool ).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs R) EE) --> R[EE/x] <== value EE.
+
+Gamma |- (appT E X) : R[X/x] <== Gamma |- E : (all R).
+
+(appT (absT R2) X) --> R2[X/x].
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (raise (excValue )).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (raise (excValue )).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+
+(if (tt ) E1 E2) --> E1.
+
+(if (ff ) E1 E2) --> E2.
+
+Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
+
+(fix V) --> (app V (fix V)) <== value V.
+
+Gamma |- (let E R) : T2 <== Gamma |- E : T1 /\ Gamma, x : T1 |- R : T2.
+
+(let V R) --> R[V/x] <== value V.
+
+Gamma |- (letrec R1 R2) : T2 <== Gamma, x : T1 |- R1 : T1 /\ Gamma, x : T1 |- R2 : T2.
+
+(letrec R1 R2) --> (let (fix (abs R1)) R2).
+
+Gamma |- (try E1 E2) : T <== Gamma |- E1 : T /\ Gamma |- E2 : (arrow (excType ) T).
+
+(try E1 E2) --> E1 <== value E1.
+
+(try (raise E1) E2) --> (app E2 E1).
+
+Gamma |- (raise E) : T <== Gamma |- E : (excType ).
+
+

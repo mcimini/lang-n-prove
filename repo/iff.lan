@@ -1,0 +1,17 @@
+Expression E ::= x | (tt ) | (ff ) | (if E E E)
+Type T ::= (bool )
+Value V ::= (tt ) | (ff )
+Error ::= 
+Context C ::= [] | (if C e e)
+
+Gamma |- (tt ) : (bool ).
+
+Gamma |- (ff ) : (bool ).
+
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+
+(if (tt ) E1 E2) --> E1.
+
+(if (ff ) E1 E2) --> E2.
+
+

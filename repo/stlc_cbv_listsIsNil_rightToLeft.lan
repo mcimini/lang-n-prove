@@ -1,0 +1,47 @@
+Expression E ::= x | (abs T (x)E) | (emptyList ) | (cons E E) | (tt ) | (ff ) | (app E E) | (head E) | (tail E) | (isnil E) | (if E E E) | (myError )
+Type T ::= (arrow T T) | (list T) | (bool )
+Value V ::= (abs T1 R2) | (emptyList ) | (cons V1 V2) | (tt ) | (ff )
+Error ::= (myError )
+Context C ::= [] | (cons C v) | (cons e C) | (app C e) | (app v C) | (head C) | (tail C) | (isnil C) | (if C e e)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (tt ) : (bool ).
+
+Gamma |- (ff ) : (bool ).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) V) --> R[V/x] <== value V.
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myError ).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myError ).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (isnil E) : (bool ) <== Gamma |- E : (list T).
+
+(isnil (emptyList )) --> (tt ).
+
+(isnil (cons E1 E2)) --> (ff ).
+
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+
+(if (tt ) E1 E2) --> E1.
+
+(if (ff ) E1 E2) --> E2.
+
+Gamma |- (myError ) : T.
+
+

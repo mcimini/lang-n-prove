@@ -1,0 +1,13 @@
+Expression E ::= x | (abs (x)E) | (app E E)
+Type T ::= (arrow T T)
+Value V ::= (abs R1)
+Error ::= 
+Context C ::= [] | (app C e)
+
+Gamma |- (abs R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs R) EE) --> R[EE/x].
+
+

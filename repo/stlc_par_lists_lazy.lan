@@ -1,0 +1,31 @@
+Expression E ::= x | (abs T (x)E) | (emptyList ) | (cons E E) | (app E E) | (head E) | (tail E) | (myError )
+Type T ::= (arrow T T) | (list T)
+Value V ::= (abs T1 R2) | (emptyList ) | (cons E1 E2)
+Error ::= (myError )
+Context C ::= [] | (app C e) | (app e C) | (head C) | (tail C)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) E) --> R[E/x].
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myError ).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myError ).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (myError ) : T.
+
+

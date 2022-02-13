@@ -1,0 +1,23 @@
+Expression E ::= x | (abs T (x)E) | (tt ) | (ff ) | (app E E) | (if E E E)
+Type T ::= (arrow T T) | (bool )
+Value V ::= (abs T1 R2) | (tt ) | (ff )
+Error ::= 
+Context C ::= [] | (app C e) | (app e C) | (if C e e) | (if e C e) | (if e e C)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (tt ) : (bool ).
+
+Gamma |- (ff ) : (bool ).
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) E) --> R[E/x].
+
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+
+(if (tt ) E1 E2) --> E1.
+
+(if (ff ) E1 E2) --> E2.
+
+

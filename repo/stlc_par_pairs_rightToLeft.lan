@@ -1,0 +1,23 @@
+Expression E ::= x | (abs T (x)E) | (pair E E) | (app E E) | (fst E) | (snd E)
+Type T ::= (arrow T T) | (times T T)
+Value V ::= (abs T1 R2) | (pair V1 V2)
+Error ::= 
+Context C ::= [] | (pair C v) | (pair e C) | (app C e) | (app e C) | (fst C) | (snd C)
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+
+Gamma |- (pair E1 E2) : (times T1 T2) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2.
+
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+
+(app (abs T R) E) --> R[E/x].
+
+Gamma |- (fst E) : T1 <== Gamma |- E : (times T1 T2).
+
+(fst (pair E1 E2)) --> E1.
+
+Gamma |- (snd E) : T2 <== Gamma |- E : (times T1 T2).
+
+(snd (pair E1 E2)) --> E2.
+
+
