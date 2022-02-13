@@ -1,4 +1,4 @@
-# Lang-n-Prove
+# Lang-n-Prove: A Proof Language for Language Proofs
 
 Author: Matteo Cimini (matteo_cimini@uml.edu)
 	<br />
@@ -40,7 +40,7 @@ To test the results of ./lnp (i.e. to test the proofs that Lang-n-Prove has gene
 	This is a bash script. The command "abella" must be in the $PATH. <br />
 	The script runs the command "abella" on all the Abella proofs (.thm files) in the folder "generated". <br />
 	The script prints a success message, or points out the Abella proof files that failed. 	
-<li> Alternatively, users can manually run Abella on the Abella proofs they are interested to check. Example: "abella generated/fpl_cbv.thm" 
+<li> Alternatively, users can manually run Abella on the Abella proofs they are interested to check. Example: run command "abella generated/fpl_cbv.thm" 
 </ul>
 
 To clean: <br />
