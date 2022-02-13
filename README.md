@@ -51,7 +51,7 @@ To clean: <br />
 </ul>
 <br />
 
-# <a name="examples"></a>Substitution Lemmas. 
+# <a name="examples"></a>Substitution Lemmas 
 
 We do not support substitution lemmas at the moment. 
 <br />
@@ -100,11 +100,11 @@ Replace "skip." as shown below.
 
 Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
 IH0 : induction on 1. intros Main Step. Typing0: case Main.  <br />
-Mabs: case Step.  
+Mapp: case Step.  
 <br/>
 ...
 <br/>
-app: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.
+Mapp: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.
 <br/>
 ...
 
