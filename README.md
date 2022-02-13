@@ -76,7 +76,7 @@ Example: Lang-n-Prove generates stlc_cbv.thm with the following Type Preservatio
 
 Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
 IH0 : induction on 1. intros Main Step. Typing0: case Main.  
-<br/>
+
 ...
 <br/>
 Mabs: case Step.   
@@ -99,13 +99,11 @@ Replace "skip." as shown below.
 <br />
 
 Theorem Type-preservation: forall e1, forall e2, forall typ, {typeOf e1 typ} -> {step e1 e2} -> {typeOf e2 typ}. 
-IH0 : induction on 1. intros Main Step. Typing0: case Main.  <br />
-Mapp: case Step.  
-<br/>
+IH0 : induction on 1. intros Main Step. Typing0: case Main.  
 ...
-<br/>
-Mapp: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.
-<br/>
+Mapp: case Step.  
+...    
+Mapp: case Step.  Hyp1 : case Hyp1(keep). CutHyp : assert ({typeOf E2 T1}). ToCut : inst Hyp3 with n1 = E2. cut ToCut with CutHyp. clear CutHyp. clear ToCut. search.   
 ...
 
 <!-- 
