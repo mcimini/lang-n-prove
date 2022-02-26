@@ -30,7 +30,7 @@ What it does:  <br />
 
 <li> loads all the languages with extension .lan in the folder "repo"
 	
-<li> applies the lnp proofs to the languages, and generates the Abella proof assistant files in the repo "generated" 
+<li> applies the lnp proofs to the languages, and generates the Abella proof assistant files in the folder "generated" 
 </ul>
 
 To test the results of ./lnp (i.e. to test the proofs that Lang-n-Prove has generated): 

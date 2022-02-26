@@ -44,7 +44,7 @@ let parseOneLanguage filename =
   let dir = "./repo/" in 
   let input = (open_in (dir ^ filename)) in
   let filebuf = Lexing.from_input input in
-  let unusedVar = print_endline ("Started parsing the language: " ^ filename) in 
+  let unusedVar = print_endline ("Reading the language: " ^ filename) in 
   let lan = try (ParserLan.fileLan LexerLan.token filebuf) with
 						    | LexerLan.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
 						    | ParserLan.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
@@ -93,7 +93,8 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	let mod_file = open_out ("./generated/" ^ nameOfLanguage ^ ".mod") in
 	output_string mod_file ("module " ^ nameOfLanguage ^ ".\n\n"); 
 	output_string mod_file (language_prettyPrintRules lan); 
-    close_out mod_file;;
+    close_out mod_file;
+    print_endline ("Proofs generated in ./generated/" ^ nameOfLanguage ^ ".thm");;
 	
 let () = List.hd (List.map applyAllSchemasToOneLanguages_to_file languagesFromRepo);;
 
