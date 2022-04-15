@@ -6,7 +6,7 @@ Define progresses : term -> prop by
 	 progresses E := exists E', {step E E'}.
 
 Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
- skip. 
+ intros Hyp1 Error. case Error. case Hyp1. search. 
 
 Theorem Canonical-form-times5: forall e, forall T1, forall T2, forall T3, forall T4, forall T5, {typeOf e (times5 T1 T2 T3 T4 T5)} -> {value e} -> exists V1, exists V2, exists V3, exists V4, exists V5, e = (tuple5 V1 V2 V3 V4 V5) /\ {value V1} /\ {value V2} /\ {value V3} /\ {value V4} /\ {value V5}. 
 intros Main ValHyp.  case Main.  Mtuple5: case ValHyp.  search.  Mselect1: case ValHyp.  Mselect2: case ValHyp.  Mselect3: case ValHyp.  Mselect4: case ValHyp.  Mselect5: case ValHyp. 

@@ -75,7 +75,7 @@ let applySchemaToAllLanguages filenameSchema =
 		List.map (applySchemaToOneLang schema) languagesFromRepo 
 
 let progressesDefinition = "Define progresses : term -> prop by\n\t progresses E := {value E} ;\n\t progresses E := {error E} ;\n\t progresses E := exists E', {step E E'}.\n\n"
-let errorTypesAllTheorem = "Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.\n skip. \n\n" 
+let errorTypesAllTheorem = "Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.\n intros Hyp1 Error. case Error. case Hyp1. search. \n\n" 
 
 let applyAllSchemasToOneLanguages_to_file filenameLan = 	
 	let schemas = List.map parseTheSchema repoOfSchemas in 

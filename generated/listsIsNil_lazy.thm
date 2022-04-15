@@ -6,7 +6,7 @@ Define progresses : term -> prop by
 	 progresses E := exists E', {step E E'}.
 
 Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.
- skip. 
+ intros Hyp1 Error. case Error. case Hyp1. search. 
 
 Theorem Canonical-form-list: forall e, forall T1, {typeOf e (list T1)} -> {value e} -> e = (emptyList) \/ exists E1, exists E2, e = (cons E1 E2). 
 intros Main ValHyp.  case Main.  search.  search.    Mhead: case ValHyp.  Mtail: case ValHyp.   Mif: case ValHyp.  MmyError: case ValHyp. 
