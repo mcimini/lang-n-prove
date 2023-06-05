@@ -1,6 +1,7 @@
 open Batteries
 open Unix
 open Filename
+open Language
 open Lnp
 open Pretty_printer
 open Pretty_printerLan
@@ -75,7 +76,9 @@ let applySchemaToAllLanguages filenameSchema =
 		List.map (applySchemaToOneLang schema) languagesFromRepo 
 
 let progressesDefinition = "Define progresses : term -> prop by\n\t progresses E := {value E} ;\n\t progresses E := {error E} ;\n\t progresses E := exists E', {step E E'}.\n\n"
-let errorTypesAllTheorem = "Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.\n intros Hyp1 Error. case Error. case Hyp1. search. \n\n" 
+let errorTypesAllTheorem lan = 
+	let proofWhenThereAreNoErrors = "Theorem Error-types-all: forall E T1 T2, {typeOf E T1} -> {error E} -> {typeOf E T2}.\n intros Hyp1 Error. case Error. " in 
+	if language_grammarLookupByCategory lan "Error" = [] then proofWhenThereAreNoErrors ^ "\n\n" else proofWhenThereAreNoErrors ^ "case Hyp1. search. \n\n"
 
 let applyAllSchemasToOneLanguages_to_file filenameLan = 	
 	let schemas = List.map parseTheSchema repoOfSchemas in 
@@ -86,7 +89,7 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	let thm_file = open_out ("./generated/" ^ nameOfLanguage ^ ".thm") in
 	output_string thm_file ("Specification \"" ^ nameOfLanguage ^ "\". \n\n"); 
 	output_string thm_file (progressesDefinition); 
-	output_string thm_file (errorTypesAllTheorem); 
+	output_string thm_file (errorTypesAllTheorem lan); 
 	List.map (output_string thm_file) (List.map abella_thrAndProof result); 
     close_out thm_file;
 	(* generate language definition .mod *)

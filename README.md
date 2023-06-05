@@ -36,7 +36,7 @@ What it does:  <br />
 To test the results of ./lnp (i.e. to test the proofs that Lang-n-Prove has generated): 
 <br />
 <ul>
-<li> ./testAll <br />
+<li> ./testAll.sh <br />
 	This is a bash script. The command "abella" must be in the $PATH. <br />
 	The script runs the command "abella" on all the Abella proofs (.thm files) in the folder "generated". <br />
 	The script prints a success message, or points out the Abella proof files that failed. 	
