@@ -4,7 +4,7 @@ done
 
 counter=0
 for f in ./generated/*.result; do
-  if grep -q -e "error:" -e "error:" "$f" 
+  if grep -q -e "error:" -e "Error:" "$f" 
   then 
 	  echo "Proof error: " "$f"
 	  let counter++
