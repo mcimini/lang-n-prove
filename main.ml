@@ -14,6 +14,7 @@ open Theorem_evaluator
 open Macro_expander
 *)
 open Lexing
+open DeclarationsToRules
 
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
@@ -30,15 +31,21 @@ let languagesFromRepo =
 		   files
 
 let repoOfSchemas = 
-	[
-	"./canonical.lnp"
+    [
+    "./inversion-subtype.lnp"
+    ;
+	"./canonical-sub.lnp"
 	;
-	"./progress-op.lnp"
+	"./progress-op-sub.lnp"
 	;
-	"./progress.lnp" 
+	"./progress-sub.lnp" 
 	;
+    ]
+    (*
 	"./preservation.lnp" 
 	]
+    *)
+;;
 
 let parseOneLanguage filename =
   (* Parse the language, lan is the parsed language *)
@@ -50,7 +57,7 @@ let parseOneLanguage filename =
 						    | LexerLan.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
 						    | ParserLan.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
    let unusedVar = IO.close_in input; in 
-      lan
+      (language_addRules lan (language_subtypeDeclarationsAsRules lan))
 
 let parseTheSchema filename = 
    (* Parse the theorem&proof schema, schema is the var of the parsed schema *)
@@ -82,6 +89,8 @@ let errorTypesAllTheorem lan =
 
 let applyAllSchemasToOneLanguages_to_file filenameLan = 	
 	let schemas = List.map parseTheSchema repoOfSchemas in 
+    let mapOfRel = [("left", Num 0); ("right", Num 1); ("exp", Num 1); ("out", Num 2)] in
+    let schemas = List.map (fun schema -> Substitution.substitution_schemaByMap schema mapOfRel) schemas in
 	let lan = parseOneLanguage filenameLan in 
 	let result = List.concat (List.map (compile lan) schemas) in (* concat, so result is a list of theorem&proof *)
 	let nameOfLanguage = Filename.chop_extension filenameLan in 

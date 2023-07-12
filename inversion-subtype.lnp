@@ -1,0 +1,9 @@
+for each ty in Type, Theorem Inversion-subtype-_(ty):
+    let r = ty.rule[<:] inn
+    forall*, (Main: subtype typ r.right) ->
+        exists*, (typ = r.left) /\ AND(P in r.premises): (P).
+
+Proof.
+Subtype_(0): induction on Main.
+search. search.
+_: apply IH0 to Subtype_(1). _: apply IH0 to Subtype_(0). search

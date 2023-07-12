@@ -1,10 +1,17 @@
 open Batteries
 open String 
+open Language
 
 type var = string
 type name = string
 type predname = string
 type cname = string
+
+type member =
+    | Var of var
+    | Num of int
+    | Relation of predname
+    | Premises
 
 type lnp_name = 
 	| String of string
@@ -33,6 +40,9 @@ and evaluatedExpression =
   | IS of evaluatedExpression * evaluatedExpression
   | OrTerm of evaluatedExpression * evaluatedExpression  
   | AndTerm of evaluatedExpression * evaluatedExpression  
+  | Dot of evaluatedExpression * member
+  | Rule of Language.rule
+  | Formula of Language.formula
   
 type formula =
   | Top
@@ -49,6 +59,10 @@ type formula =
   | Imply of formula * formula
   | And of formula * formula
   | Or of formula * formula
+  | ExistStar of formula
+  | ForallStar of formula
+  | Let of var * evaluatedExpression * formula
+  | FVar of var
 
 
 type proof =
@@ -144,3 +158,38 @@ let rec map_names_formulae_in_theorem formula = match formula with
 	| Exists(var, formula) -> map_names_formulae_in_theorem formula
 	| _ -> []
 
+let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 
+	| Constr(cname, ts) -> Constructor(cname, List.map langConstructor_to_LNPConstructor ts) 
+	| LangVar(var) -> Var(var)
+	| Abs(t) -> langConstructor_to_LNPConstructor t (* Here you miss (X)e and just display e *)
+	| AbsType(t) -> langConstructor_to_LNPConstructor t 
+	| Substitution(t1,t2,t3) -> Constructor("substitution", [])
+	(* | _ -> raise(Failure(dump termFromLanguage))*)
+
+let formula_of_exp ((Formula((Formula(pred, args)): Language.formula)): evaluatedExpression): formula =
+    let expList = List.map langConstructor_to_LNPConstructor args in
+    Formula(String("_"), pred, expList)
+
+(* expect formula is already compiled *)
+let rec formula_free_vars (formula: formula): var list =
+    removeDuplicates begin
+    match formula with
+    | Top -> []
+    | Bottom -> []
+	| Formula(lnp_name, predname, ts) -> List.concat (List.map term_getVars ts)
+    | Forall(var2, formula) -> list_difference (formula_free_vars formula) [var2]
+	| Exists(var2, formula) -> list_difference (formula_free_vars formula) [var2]
+	| ForallVars(t, formula) -> assert false
+	| ExistsVars(t, formula) -> assert false
+	| EqualFormula(t1, t2) -> (term_getVars t1) @ (term_getVars t2)
+	| OrMacro(var2, t, formula) -> assert false
+	| AndMacro(var2, t, formula) -> assert false
+	| ImplyMacro(var2, t, formula) -> assert false
+	| Imply(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+	| And(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+	| Or(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+    | ExistStar(formula) -> []
+    | ForallStar(formula) -> []
+    | Let(var, t, formula) -> assert false
+    | FVar(var) -> assert false
+    end

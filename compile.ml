@@ -12,13 +12,7 @@ open Substitution
 *)
 let unusedVar = "_unused_"
 
-let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 
-	| Constr(cname, ts) -> Constructor(cname, List.map langConstructor_to_LNPConstructor ts) 
-	| LangVar(var) -> Var(var)
-	| Abs(t) -> langConstructor_to_LNPConstructor t (* Here you miss (X)e and just display e *)
-	| AbsType(t) -> langConstructor_to_LNPConstructor t 
-	| Substitution(t1,t2,t3) -> Constructor("substitution", [])
-	(* | _ -> raise(Failure(dump termFromLanguage))*)
+let evalExp_of_formula (f: formula): evaluatedExpression = Formula f
 
 type eval_result = 
 	| Term of evaluatedExpression
@@ -60,6 +54,16 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
 							| _ -> Boolean false )
 	| OrTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) || eval_getBoolean (eval lan t2))
 	| AndTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) && eval_getBoolean (eval lan t2))
+    | Dot(Constructor(name, _), Relation(pred)) ->
+        let rules = List.filter (rule_isPredname pred) (language_getRulesOfOp lan name) in
+        if (List.length rules) = 1 then
+            Term (Rule (List.hd rules))
+        else
+            raise (Failure("Expected exactly one " ^ pred ^ " rule for constructor " ^ name ^ "."))
+    | Dot(Rule r, Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments (rule_getConclusion r)) n))
+    | Dot(Rule r, Premises) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
+    | Rule(_) | Formula(_) -> Term(evaluatedExpression)
+    
 
 let compile_lnp_name lan lnp_name = match lnp_name with 
 	| SuffixedString(str, evaluatedExpression) -> let suffix = (match eval lan evaluatedExpression with 
@@ -84,6 +88,38 @@ let rec compile_formula lan formula = match formula with
 	| Imply(formula1, formula2) ->  if compile_formula lan formula2 = Top then compile_formula lan formula1 else Imply(compile_formula lan formula1, compile_formula lan formula2)
 	| And(formula1, formula2) -> if compile_formula lan formula2 = Top then compile_formula lan formula1 else And(compile_formula lan formula1, compile_formula lan formula2)
 	| Or(formula1, formula2) -> if compile_formula lan formula2 = Bottom then compile_formula lan formula1 else Or(compile_formula lan formula1, compile_formula lan formula2)
+    | ExistStar(formula) -> ExistStar(compile_formula lan formula)
+    | ForallStar(formula) -> ForallStar(compile_formula lan formula)
+    | Let(var, t, formula) -> compile_formula lan (substitution_formula formula var (eval_getTerm (eval lan t)))
+
+(* expect formula is already compiled *)
+let rec expand_some_stars ?(bound_vars = []) formula =
+    match formula with
+	| Top -> Top
+	| Bottom -> Bottom
+	| Formula(lnp_name, predname, ts) -> formula
+	| Forall(var2, formula) -> Forall(var2, expand_some_stars ~bound_vars:(var2 :: bound_vars) formula)
+	| Exists(var2, formula) -> Exists(var2, expand_some_stars ~bound_vars:(var2 :: bound_vars) formula)
+	| ForallVars(t, formula) -> assert false
+	| ExistsVars(t, formula) -> assert false
+	| EqualFormula(t1, t2) -> formula
+	| OrMacro(var2, t, formula) -> assert false
+	| AndMacro(var2, t, formula) -> assert false
+	| ImplyMacro(var2, t, formula) -> assert false
+	| Imply(formula1, formula2) -> Imply(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+	| And(formula1, formula2) -> And(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+	| Or(formula1, formula2) -> Or(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+    | ExistStar(formula) -> makeExists (list_difference (formula_free_vars formula) bound_vars) formula
+    | ForallStar(formula) -> makeForall (list_difference (formula_free_vars formula) bound_vars) formula
+    | Let(var, t, formula) -> assert false
+    | FVar(var) -> assert false
+
+let rec expand_stars formula =
+    let expanded = expand_some_stars formula in
+    if expanded = formula then
+        formula
+    else
+        expand_stars expanded
 	
 let rec compile_proof lan names proof = match proof with 
 | Intros -> Intros
@@ -101,7 +137,10 @@ let rec compile_proof lan names proof = match proof with
 | Seq(proof1, proof2) -> if compile_proof lan names proof1 = NoOp then compile_proof lan names proof2 else Seq(compile_proof lan names proof1, compile_proof lan names proof2)
 
 let compileInstantiated lan schema = 
-	ForEachThm(None, compile_lnp_name lan (schema_getTheoremName schema), compile_formula lan (schema_getTheorem schema), compile_proof lan (map_names_formulae_in_theorem (schema_getTheorem schema)) (schema_getProof schema))
+	ForEachThm(None,
+        compile_lnp_name lan (schema_getTheoremName schema),
+        expand_stars (compile_formula lan (schema_getTheorem schema)),
+        compile_proof lan (map_names_formulae_in_theorem (schema_getTheorem schema)) (schema_getProof schema))
 	
 let compile lan schema : schema list = 
 	let (var, substList) : (string * (evaluatedExpression list)) = 

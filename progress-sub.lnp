@@ -1,0 +1,9 @@
+Theorem Progress-thm : 
+	forall e, forall typ, (Main : typeOf (empty) e typ) -> (_ : progresses e).
+Proof. 
+Typing_(0): induction on Main.  
+for each e in Expression: 
+	for each i in contextualArgs(e): _ : apply IH0 to Typing_(i) endfor.
+	backchain on Progress-_(e)
+endfor.
+backchain on IH0

@@ -1,0 +1,5 @@
+for all v in Value Theorem inversion_typing_(v):
+    let s_rule = ofType(v).rule[<:] inn
+    let t_rule = align v.rule[|-] to s_rule where out = left inn
+    forall*, typeOf t_rule.exp s_rule.right ->
+        exists*, AND(P in t_rule.premises): (P) /\ AND(P in s_rule.premises): (P)

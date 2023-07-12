@@ -22,14 +22,23 @@ rule token = parse
   | "for"               { FOR }
   | "each"               { EACH }
   | "in"           { IN }
+  | "inn"           { INN }
   | ","               { COMMA }
   | "Theorem"               { THEOREM }
   | "_"            { UNDERSCORE }
   | "("             { LPAREN }
   | ")"             { RPAREN }
+  | "["             { LSQUARE }
+  | "]"             { RSQUARE }
   | ":"               { COLON }
+  | "forall*"              { FORALLSTAR }
   | "forall"               { FORALL }
   | "."               { DOT }
+  | "premises"        { PREMISES }
+  | "rule"            { RULE }
+  | "<:" { SUBTYPING }
+  | "|-" { TURNSTYLE }
+  | "-->" { STEP }
   | "forallVars"               { FORALLVARS }
   | "->"            { IMPLY }
   | "OR"               { ORMACRO }
@@ -57,6 +66,7 @@ rule token = parse
   | "then"            { THEN }
   | "else"            { ELSE }
   | "noOp"            { NOP }
+  | "exists*"               { EXISTSTAR }
   | "exists"               { EXISTS }
   | "induction"            { INDUCTION }
   | "induction*"            { INDUCTIONSTAR }
@@ -80,6 +90,7 @@ rule token = parse
   | "endIMPLY"               { ENDIMPLY }
   | "endif"               { ENDIF }
   | "skip"               { SKIP }
+  | "let"       { LET }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | name             { NAME (Lexing.lexeme lexbuf) }
   | ['0'-'9']+ as i { INT (int_of_string i) }  

@@ -6,15 +6,21 @@ type token =
   | VALUESOF
   | VALUEARGS
   | UNDERSCORE
+  | TURNSTYLE
   | TO
   | THEOREM
   | THEN
   | TARGETV
   | TARGETOP
+  | SUBTYPING
+  | STEP
   | SKIP
   | SEARCH
+  | RULE
+  | RSQUARE
   | RPAREN
   | PROOF
+  | PREMISES
   | ORTERM
   | ORMACRO
   | OR
@@ -22,7 +28,9 @@ type token =
   | OFTYPE
   | NOP
   | NAME of (string)
+  | LSQUARE
   | LPAREN
+  | LET
   | ISVAR
   | ISSINGLEVALUE
   | ISERRORHANDLER
@@ -31,6 +39,7 @@ type token =
   | IS
   | INTROS
   | INT of (int)
+  | INN
   | INDUCTIONSTAR
   | INDUCTION
   | IN
@@ -40,9 +49,11 @@ type token =
   | GETARGTYPE
   | GETARGS
   | FORALLVARS
+  | FORALLSTAR
   | FORALL
   | FOR
   | EXISTSVARS
+  | EXISTSTAR
   | EXISTS
   | EVALORDER
   | EQUAL

@@ -9,14 +9,23 @@
 %token FOR
 %token EACH
 %token IN
+%token INN
 %token COMMA
 %token THEOREM
 %token UNDERSCORE
 %token LPAREN
 %token RPAREN
+%token LSQUARE
+%token RSQUARE
 %token COLON
+%token FORALLSTAR
 %token FORALL
 %token DOT
+%token PREMISES
+%token RULE
+%token TURNSTYLE
+%token STEP
+%token SUBTYPING
 %token FORALLVARS
 %token IMPLY
 %token ORMACRO
@@ -56,6 +65,7 @@
 %token ISERRORHANDLER
 %token GETARGTYPE
 %token OR
+%token EXISTSTAR
 %token EXISTS
 %token ISVAR
 %token IS
@@ -66,6 +76,7 @@
 %token ENDIMPLY
 %token ENDIF
 %token SKIP
+%token LET
 
 %left IMPLYMACRO
 
@@ -148,10 +159,24 @@ evalExp:
       { IS(Var var,t) }
   | LPAREN var = VAR EQUAL t = evalExp RPAREN
       { EqualTerm(Var var, t) }
+  | t1 = evalExp DOT PREMISES
+      { Dot(t1, Premises) }
+  | t1 = evalExp DOT t2 = VAR
+      { Dot(t1, Var(t2)) }
+  | t1 = evalExp DOT RULE LSQUARE r = relation RSQUARE
+      { Dot(t1, Relation(r)) }
   | t1 = evalExp ORTERM t2 = evalExp 
       { OrTerm(t1,t2) }
   | t1 = evalExp ANDTERM t2 = evalExp 
       { AndTerm(t1,t2) }
+
+relation:
+    | TURNSTYLE
+        {"typeOf"}
+    | STEP
+        {"step"}
+    | SUBTYPING
+        {"subtype"}
 
 lnp_name:
 	| UNDERSCORE
@@ -163,9 +188,14 @@ lnp_name:
 
 
 
+
 formula:
 	| LPAREN name = lnp_name COLON predname = VAR es = list(evalExp) RPAREN
     	{ Formula(name, predname, es) }  
+    | FORALLSTAR COMMA f = formula
+        { ForallStar(f) }
+    | EXISTSTAR COMMA f = formula
+        { ExistStar(f) }
     | FORALL var = VAR COMMA f = formula
         { Forall(var, f) }
 	| FORALLVARS LPAREN t = evalExp RPAREN COMMA f = formula
@@ -174,12 +204,22 @@ formula:
   	    { ExistsVars(t,f) }
     | ORMACRO LPAREN var = VAR IN t = evalExp RPAREN COLON f = formula option(ENDOR)
   	    { OrMacro(var,t,f) }
+    | ORMACRO LPAREN var = NAME IN t = evalExp RPAREN COLON f = formula option(ENDOR)
+  	    { OrMacro(var,t,f) }
     | ANDMACRO LPAREN var = VAR IN t = evalExp RPAREN COLON f = formula option(ENDAND)
+    	{ AndMacro(var,t,f) }
+    | ANDMACRO LPAREN var = NAME IN t = evalExp RPAREN COLON f = formula option(ENDAND)
     	{ AndMacro(var,t,f) }
     | IMPLYMACRO LPAREN var = VAR IN t = evalExp RPAREN COLON f = formula option(ENDIMPLY)
     	{ ImplyMacro(var,t,f) }
+    | IMPLYMACRO LPAREN var = NAME IN t = evalExp RPAREN COLON f = formula option(ENDIMPLY)
+    	{ ImplyMacro(var,t,f) }
     | LPAREN var = VAR EQUAL e2 = evalExp RPAREN
         { EqualFormula(Var(var),e2) }
+    | LET var = VAR EQUAL t = evalExp INN f = formula
+        { Let (var, t, f) }
+	| LPAREN var = NAME RPAREN
+        { FVar(var) }
     | f1 = formula IMPLY f2 = formula
         { Imply(f1, f2) }
     | f1 = formula AND f2 = formula

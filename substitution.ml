@@ -3,6 +3,13 @@ open Option
 open List
 open Lnp
 
+let member_of_evalExp (exp: evaluatedExpression): member =
+    match exp with
+    | Num (n) -> Num (n)
+    | Var (var) -> Var (var)
+    (* Only numbers can be substuted inside the member of a dot notation *)
+    | _ -> raise (Failure("member_of_evalExp: not a number"))
+
 let rec substitution_evaluatedExpression evaluatedExpression var term = match evaluatedExpression with 
 | Var(var2) -> if var = var2 then term else Var(var2)
 | Num(n) -> Num(n)
@@ -27,6 +34,9 @@ let rec substitution_evaluatedExpression evaluatedExpression var term = match ev
 | EqualTerm(t1, t2) -> EqualTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
 | OrTerm(t1, t2) -> OrTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
 | AndTerm(t1, t2) -> AndTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
+| Dot (t, Var(var2)) -> Dot (substitution_evaluatedExpression t var term,
+        member_of_evalExp (substitution_evaluatedExpression (Var(var2)) var term))
+| Dot (t, m) -> Dot (substitution_evaluatedExpression t var term, m)
 and substitution_evaluatedExpression_mapversion var term evaluatedExpression = substitution_evaluatedExpression evaluatedExpression var term
 
 let substitution_lnp_name lnp_name var term = match lnp_name with 
@@ -48,6 +58,11 @@ let rec substitution_formula formula var term = match formula with
 	| Imply(formula1, formula2) ->  Imply(substitution_formula formula1 var term, substitution_formula formula2 var term)
 	| And(formula1, formula2) -> And(substitution_formula formula1 var term, substitution_formula formula2 var term)
 	| Or(formula1, formula2) -> Or(substitution_formula formula1 var term, substitution_formula formula2 var term)
+    | ForallStar (formula) -> ForallStar(substitution_formula formula var term)
+    | ExistStar (formula) -> ExistStar(substitution_formula formula var term)
+    | Let (name, t, formula1) -> if name = var then formula else
+        Let (name, (substitution_evaluatedExpression t var term), (substitution_formula formula1 var term))
+    | FVar (var2) -> if var = var2 then formula_of_exp term else formula
 	
 let rec substitution_proof proof var term = match proof with 
 	| Intros -> Intros
@@ -65,5 +80,10 @@ let rec substitution_proof proof var term = match proof with
 	| Seq(proof1, proof2) -> Seq(substitution_proof proof1 var term, substitution_proof proof2 var term)
 
 (* substitution_schema also removes the Iteration part of the theorem (for each ...)  *)
-let substitution_schema schema var term = ForEachThm(None, substitution_lnp_name (schema_getTheoremName schema) var term, substitution_formula (schema_getTheorem schema) var term, substitution_proof (schema_getProof schema) var term)
+let substitution_schema schema var term = ForEachThm(schema_getIteration schema, substitution_lnp_name (schema_getTheoremName schema) var term, substitution_formula (schema_getTheorem schema) var term, substitution_proof (schema_getProof schema) var term)
 
+let substitution_schemaByMap schema map =
+    List.fold_left
+        (fun sch (var, t) -> substitution_schema sch var t)
+        schema
+        map

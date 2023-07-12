@@ -35,13 +35,21 @@ let term_isConstr t = match t with
 	| Constr(cname,_) -> true
 	| _ -> false
 
-let termLan_list_mem t listOfTerms : bool = List.mem (term_getCNAME t) (List.map term_getCNAME (List.filter term_isConstr listOfTerms))
+let termLan_list_mem t listOfTerms : bool =
+    if term_isConstr t then
+        List.mem (term_getCNAME t) (List.map term_getCNAME (List.filter term_isConstr listOfTerms))
+    else
+        false
+
 let termLan_list_mem_map_version listOfTerms t = termLan_list_mem t listOfTerms
+
+let list_difference a b = let notpresent x = not (List.mem x b) in List.filter notpresent a
 	
 let compareConstructors t1 t2 = termLan_list_mem t1 [t2]
 
 let language_getGrammar (Language(grammar, _)) = grammar
 let language_getRules (Language(_, rules)) = rules
+let language_addRules (Language(grammar, rest)) rules = Language(grammar, rest @ rules)
 
 let rule_getInputOfConclusion (Rule(_,Formula(predname,ts))) = if predname = "typeOf" then List.nth ts 1 else List.hd ts
 let rule_getOutputOfConclusion (Rule(_,Formula(_,ts))) = List.last ts
@@ -69,13 +77,17 @@ let numbers_to_metavariables (Constr(cname,ts)) =
 			| _ -> t) 
 	 in Constr(cname, List.mapi insert_number_to_var ts)
 
+let language_grammarCatagoryExists lan cname : bool =
+	 let grammarLine = List.filter (fun grLine -> cname = (grammarLine_getCategory grLine)) (language_getGrammar lan) in 
+     not (grammarLine = [])
+
 (* cname is a grammar syntactic category, example: Expression, Type *)
 let language_grammarLookupByCategory lan cname : term list = 
 	 let grammarLine = List.filter (fun grLine -> cname = (grammarLine_getCategory grLine)) (language_getGrammar lan) in 
 	 if grammarLine = [] then [] else 
 	 if is_none (grammarLine_getItemsOption (List.hd grammarLine)) then [] else 
 		 let grammarItems = List.filter term_isConstr (get (grammarLine_getItemsOption (List.hd grammarLine))) in 
-	 	if cname = "Value" || cname = "Context"  (* vars in Value are already numbered, Contexts do not need to get a number *)
+	 	if cname = "Value" || cname = "Context" || cname = "Subtyping"  (* vars in Value are already numbered, Contexts and Subtyping do not need to get a number *)
 			then grammarItems 
 			else List.map numbers_to_metavariables grammarItems
 

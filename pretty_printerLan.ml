@@ -39,19 +39,35 @@ let language_prettyPrintRule rule =
 	let displayPremises = if premises = [] then "" else " :- " ^ (String.concat ", " (List.map language_prettyPrintFormula premises)) in 
 	           (language_prettyPrintFormula conclusion) ^ displayPremises ^ ".\n"
 
+(*
+- for each cname
+  - do getRuleByOp
+  - filter for "typeof"
+  - head
+  *)
+
 let language_prettyPrintRules lan = 
-	(* create a map: op -> its typing rule *)
+	(* create a map: op -> its typing rule:
 	let allTypingRules = language_getTypingRules lan in
 	let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
+    *)
 	let expressionCNAMES = List.map term_getCNAME (language_grammarLookupByCategory lan "Expression") in 
 	(* print typing rules as they appear in Expression *)
-		String.concat "\n" (List.map (fun e -> language_prettyPrintRule (List.assoc e mapOpToTypingRule)) expressionCNAMES)
+		(*String.concat "\n" (List.map (fun e -> language_prettyPrintRule (List.assoc e mapOpToTypingRule)) expressionCNAMES)*)
+		String.concat "\n" (expressionCNAMES |> List.map
+            (fun cname -> language_prettyPrintRule begin
+                let filtered = 
+                    (language_getRulesOfOp lan cname) |>
+                    List.filter (rule_isPredname "typeOf")
+                in List.hd filtered
+            end))
 		^ let allReductionRules = language_getReductionRules lan in
 		String.concat "\n" (List.map language_prettyPrintRule allReductionRules)
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Value"))
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Error"))
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Context"))
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "ErrorContext"))
+		^ String.concat "\n" (List.map language_prettyPrintRule (language_subtypeDeclarationsAsRules lan))
 
 let language_prettyPrintExpressions_in_TypingRules_order lan = 
 	let allTypingRules = language_getTypingRules lan in
