@@ -1,5 +1,9 @@
-for all v in Value Theorem inversion_typing_(v):
-    let s_rule = ofType(v).rule[<:] inn
-    let t_rule = align v.rule[|-] to s_rule where out = left inn
-    forall*, typeOf t_rule.exp s_rule.right ->
-        exists*, AND(P in t_rule.premises): (P) /\ AND(P in s_rule.premises): (P)
+for each v in Value, Theorem Inversion-typing-_(v):
+    let srule = ofType(v).rule[<:] inn
+    let trule = align v.rule[|-] to srule where out = left inn
+    forall*, (Main : typeOf (empty) trule.exp srule.right) ->
+        exists*, AND(P in trule.premises): (P) endAND /\ AND(P in srule.premises): (P).
+Proof.
+Subtype_(0): induction on Main.
+search.
+_: apply Inversion-subtype-_(ofType(v)) to Subtype1. _: apply IH0 to Subtype0. search

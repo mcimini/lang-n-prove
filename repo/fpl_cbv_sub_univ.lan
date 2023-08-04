@@ -1,8 +1,9 @@
-Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (pair E E) | (inl E) | (inr E) | (emptyList ) | (cons E E) | (absT (X)E) | (fold E (X)T) | (app E E) | (pred E) | (if E E E) | (fst E) | (snd E) | (case E (x)E (x)E) | (head E) | (tail E) | (appT E T) | (unfold E) | (fix E) | (letrec T (x)E (x)E) | (try E E) | (raise E)
-Type T ::= (arrow T T) | (int ) | (bool ) | (times T T) | (sum T T) | (list T) | (all (X)T) | (mu (X)T)
-Value V ::= (abs T1 R2) | (zero ) | (pair V1 V2) | (succ V1) | (tt ) | (ff ) | (inl V1) | (inr V1) | (emptyList ) | (cons V1 V2) | (absT R1) | (fold V1 U2)
+Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (pair E E) | (inl E) | (inr E) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (if E E E) | (fst E) | (snd E) | (case E (x)E (x)E) | (head E) | (tail E) | (fix E) | (letrec T (x)E (x)E) | (try E E) | (raise E) | (absT (X)E) | (appT E T)
+Type T ::= (arrow T T) | (int ) | (bool ) | (times T T) | (sum T T) | (list T) | (all (X)T)
+Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (pair V1 V2) | (inl V1) | (inr V1) | (emptyList ) | (cons V1 V2) | (absT R1)
 Error ::= (raise V1)
-Context C ::= [] | (succ C) | (inl C) | (inr C) | (pair C e) | (pair v C) | (cons C e) | (cons v C) | (fold C e) | (app C e) | (app v C) | (pred C) | (if C e e) | (fst C) | (snd C) | (case C e e) | (head C) | (tail C) | (appT C e) | (unfold C) | (fix C) | (try C e) | (raise C)
+Context C ::= [] | (succ C) | (pair C e) | (pair v C) | (inl C) | (inr C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (if C e e) | (fst C) | (snd C) | (case C e e) | (head C) | (tail C) | (fix C) | (try C e) | (raise C)
+Subtyping S ::= (arrow Contra Cov) | (int) | (bool) | (times Cov Cov) | (sum Cov Cov) | (list Cov) | (all AbsCov)
 
 Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
 
@@ -14,7 +15,7 @@ Gamma |- (tt ) : (bool ).
 
 Gamma |- (ff ) : (bool ).
 
-Gamma |- (pair E1 E2) : (times T1 T2) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2. 
+Gamma |- (pair E1 E2) : (times T1 T2) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2.
 
 Gamma |- (inl E) : (sum T1 T2) <== Gamma |- E : T1.
 
@@ -22,11 +23,7 @@ Gamma |- (inr E) : (sum T1 T2) <== Gamma |- E : T2.
 
 Gamma |- (emptyList ) : (list T).
 
-Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
-
-Gamma |- (absT R2) : (all R) <== Gamma, X |- R2 : R.
-
-Gamma |- (fold E R) : (mu R) <== Gamma |- E : R[(mu R)/x].
+Gamma |- (cons E100 E200) : (list T00) <== Gamma |- E100 : T00 /\ Gamma |- E200 : (list T00).
 
 Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
 
@@ -46,11 +43,11 @@ Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma
 
 Gamma |- (fst E) : T1 <== Gamma |- E : (times T1 T2).
 
+(fst (pair E1 E2)) --> E1.
+
 Gamma |- (snd E) : T2 <== Gamma |- E : (times T1 T2).
 
-(fst (pair V1 V2)) --> V1.
-
-(snd (pair V1 V2)) --> V2.
+(snd (pair E1 E2)) --> E2.
 
 Gamma |- (case EE R1 R2) : T <== Gamma |- EE : (sum T1 T2) /\ Gamma, x : T1 |- R1 : T /\ Gamma, x : T2 |- R2 : T.
 
@@ -70,14 +67,6 @@ Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
 
 (tail (cons E1 E2)) --> E2.
 
-Gamma |- (appT E X) : R[X/x] <== Gamma |- E : (all R).
-
-(appT (absT R2) X) --> R2[X/x].
-
-Gamma |- (unfold E) : R[(mu R)/x] <== Gamma |- E : (mu R).
-
-(unfold (fold E R)) --> E <== value E.
-
 Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
 
 (fix E) --> (app E (fix E)) <== value E.
@@ -94,4 +83,8 @@ Gamma |- (try E1 E2) : T <== Gamma |- E1 : T /\ Gamma |- E2 : (arrow (int ) T).
 
 Gamma |- (raise E1) : T <== Gamma |- E1 : (int ).
 
+Gamma |- (absT R2) : (all R) <== Gamma, X |- R2 : R.
 
+Gamma |- (appT E X) : R[X/x] <== Gamma |- E : (all R).
+
+(appT (absT R2) X) --> R2[X/x].

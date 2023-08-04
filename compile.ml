@@ -54,7 +54,8 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
 							| _ -> Boolean false )
 	| OrTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) || eval_getBoolean (eval lan t2))
 	| AndTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) && eval_getBoolean (eval lan t2))
-    | Dot(Constructor(name, _), Relation(pred)) ->
+    | Dot(t, Relation(pred)) ->
+        let name = term_getConstructorName (eval_getTerm (eval lan t)) in
         let rules = List.filter (rule_isPredname pred) (language_getRulesOfOp lan name) in
         if (List.length rules) = 1 then
             Term (Rule (List.hd rules))
@@ -63,7 +64,23 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
     | Dot(Rule r, Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments (rule_getConclusion r)) n))
     | Dot(Rule r, Premises) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
     | Rule(_) | Formula(_) -> Term(evaluatedExpression)
-    
+    | Align(t1, t2, Num n1, Num n2) ->
+        let (Lnp.Rule(r1)) = eval_getTerm (eval lan t1) in
+        let (Lnp.Rule(r2)) = eval_getTerm (eval lan t2) in
+        let conc1 = rule_getConclusion r1 in
+        let conc2 = rule_getConclusion r2 in
+        let t1 = List.nth (formula_getArguments conc1) n1 in
+        let t2 = List.nth (formula_getArguments conc2) n2 in
+        let substs = constr_unify t1 t2 in
+        Term (Rule (List.fold_left (fun rule (var, term) -> rule_substitution rule var term) r1 substs))
+    | Append(t1, t2) ->
+        let left = eval_getListOfTerms (eval lan t1) in
+        let right = eval_getListOfTerms (eval lan t2) in
+        ListOfTerms (left @ right)
+    | TargetOfElimForm(t1, t2) | TargetOfErrorHandler(t1, t2) ->
+        let elim = (term_getConstructorName (eval_getTerm (eval lan t1))) in
+        let value = (term_getConstructorName (eval_getTerm (eval lan t2))) in
+        Term (langConstructor_to_LNPConstructor (tmp_name_fix lan elim value))
 
 let compile_lnp_name lan lnp_name = match lnp_name with 
 	| SuffixedString(str, evaluatedExpression) -> let suffix = (match eval lan evaluatedExpression with 

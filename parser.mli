@@ -2,6 +2,7 @@
 (* The type of tokens. *)
 
 type token = 
+  | WHERE
   | VAR of (string)
   | VALUESOF
   | VALUEARGS
@@ -12,6 +13,8 @@ type token =
   | THEN
   | TARGETV
   | TARGETOP
+  | TARGETOFERRORHANDLER
+  | TARGETOFELIMFORM
   | SUBTYPING
   | STEP
   | SKIP
@@ -74,9 +77,11 @@ type token =
   | CASE
   | BACKCHAIN
   | APPLY
+  | APPEND
   | ANDTERM
   | ANDMACRO
   | AND
+  | ALIGN
 
 (* This exception is raised by the monolithic API functions. *)
 

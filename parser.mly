@@ -77,6 +77,11 @@
 %token ENDIF
 %token SKIP
 %token LET
+%token ALIGN
+%token WHERE
+%token APPEND
+%token TARGETOFELIMFORM
+%token TARGETOFERRORHANDLER
 
 %left IMPLYMACRO
 
@@ -153,6 +158,14 @@ evalExp:
       { IsErrorHandler t }
   | GETARGTYPE LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
 	  { GetArgType(t1, t2) }
+  | ALIGN t1 = evalExp TO t2 = evalExp WHERE var1 = VAR EQUAL var2 = VAR
+      { Align(t1, t2, Var(var1), Var(var2)) }
+  | APPEND LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
+      { Append(t1, t2) }
+  | TARGETOFELIMFORM LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
+      { TargetOfElimForm(t1, t2) }
+  | TARGETOFERRORHANDLER LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
+      { TargetOfErrorHandler(t1, t2) }
   | var = VAR IN t = evalExp 
       { InList(Var var,t) }
   | var = VAR IS t = evalExp 

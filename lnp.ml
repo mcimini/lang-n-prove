@@ -43,6 +43,10 @@ and evaluatedExpression =
   | Dot of evaluatedExpression * member
   | Rule of Language.rule
   | Formula of Language.formula
+  | Align of evaluatedExpression * evaluatedExpression * evaluatedExpression * evaluatedExpression
+  | Append of evaluatedExpression * evaluatedExpression
+  | TargetOfElimForm of evaluatedExpression * evaluatedExpression
+  | TargetOfErrorHandler of evaluatedExpression * evaluatedExpression
   
 type formula =
   | Top
@@ -148,6 +152,12 @@ String.get var1 0 = String.get var2 0 || String.get var1 0 = 'R' || String.get v
 			 String.starts_with var2 "R" || String.starts_with var2 (String.make 1 (String.get var1 0))) in  
 		List.for_all equalupToNumbers (List.combine (term_getArguments exp) (term_getArguments foundItem))
 
+let constr_unify (Constr(c1, args1)) (Constr(c2, args2)) =
+    if (c1 <> c2) then begin
+        raise (Failure("Can't unify " ^ c1 ^ " constructor with " ^ c2 ^ " constructor."))
+    end;
+    List.map2 (fun (LangVar(a)) (LangVar(b)) -> (a, LangVar(b))) args1 args2
+
 let numberToNumTerm n = Num n 
 
 	(* map_names_formulae_in_theorem formula is the list (name, theorem) *)
@@ -161,8 +171,9 @@ let rec map_names_formulae_in_theorem formula = match formula with
 let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 
 	| Constr(cname, ts) -> Constructor(cname, List.map langConstructor_to_LNPConstructor ts) 
 	| LangVar(var) -> Var(var)
-	| Abs(t) -> langConstructor_to_LNPConstructor t (* Here you miss (X)e and just display e *)
-	| AbsType(t) -> langConstructor_to_LNPConstructor t 
+    | Abs(t) -> Constructor("expBinding", [langConstructor_to_LNPConstructor t])
+    | BoundVar -> Var("x")
+    | AbsType(t) -> Constructor("typeBinding", [langConstructor_to_LNPConstructor t])
 	| Substitution(t1,t2,t3) -> Constructor("substitution", [])
 	(* | _ -> raise(Failure(dump termFromLanguage))*)
 
@@ -176,7 +187,9 @@ let rec formula_free_vars (formula: formula): var list =
     match formula with
     | Top -> []
     | Bottom -> []
-	| Formula(lnp_name, predname, ts) -> List.concat (List.map term_getVars ts)
+    | Formula(lnp_name, predname, ts) ->
+        let ts = if predname = "typeOf" then List.tl ts else ts in
+        List.concat (List.map term_getVars ts)
     | Forall(var2, formula) -> list_difference (formula_free_vars formula) [var2]
 	| Exists(var2, formula) -> list_difference (formula_free_vars formula) [var2]
 	| ForallVars(t, formula) -> assert false

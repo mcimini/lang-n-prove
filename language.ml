@@ -66,6 +66,26 @@ let language_getRulesOfOp lan cname = List.filter (fun r -> compareConstructors 
 
 let rule_isPredname predname (Rule(_,Formula(predname2,_))) = predname = predname2
 
+let rec term_subst t1 var term =
+    let subst t = term_subst t var term in
+    match t1 with
+	| Constr(cname, args) -> Constr(cname, List.map subst args)
+    | LangVar(v) when v = var -> term
+    | LangVar(v) -> t1
+	| BoundVar -> BoundVar
+	| BoundTypeVar -> BoundTypeVar
+	| Abs(t1) -> Abs(subst t1)
+	| AbsType(t1) -> AbsType(subst t1)
+	| Substitution(t1, t2, t3) -> Substitution(subst t1, subst t2, subst t3)
+
+let formula_subst (Formula(pred, args)) var term =
+    let subst t = term_subst t var term in
+    Formula(pred, List.map subst args)
+
+let rule_substitution (Rule(premises, conclusion)) var term =
+    let subst f = formula_subst f var term in
+    Rule(List.map subst premises, subst conclusion)
+
 let language_getTypingRules lan = List.filter (rule_isPredname "typeOf") (language_getRules lan)
 let language_getReductionRules lan = List.filter (rule_isPredname "step") (language_getRules lan)
 
@@ -199,8 +219,16 @@ let language_getTypeOfNthArg lan cname n : term =
 	let typingCallOfNTH = List.nth (rule_getPremises ruleOfCNAME) n in  
 	 rule_getOutputOfConclusion (Rule([],typingCallOfNTH)) 
 		 (* I reuse rule_getOutputOfConclusion, not to implement formula_getOutputOfConclusion *)
-	
 
+let tmp_name_fix lan (elim: string) (value: string) : term =
+    let rules = List.filter (rule_isPredname "step") (language_getRulesOfOp lan elim) in
+    let things = (List.filter
+        (fun rule -> match (rule_getInputOfConclusion rule) with
+            | Constr(_, Constr(cname,_) :: _) when cname = value -> true
+            | _ -> false)
+        rules) in
+    if things = [] then raise (Failure(elim ^ " " ^ value)) else
+    rule_getOutputOfConclusion (List.hd things)
 (*
 
 let language_getTypingRuleOfOp lan opname = List.filter (rule_isPredname "typeOf") (language_getRules lan)

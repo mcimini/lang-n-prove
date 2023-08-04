@@ -46,6 +46,8 @@ let language_termToSubtypeRule (t: term): rule =
         let args = match var with
         | LangVar("Cov") -> [List.nth new_vars i; List.nth new_vars_prime i]
         | LangVar("Contra") -> [List.nth new_vars_prime i; List.nth new_vars i]
+        | LangVar("AbsCov") -> [List.nth new_vars i; List.nth new_vars_prime i; Constr("abs", [])]
+        | LangVar("AbsContra") -> [List.nth new_vars_prime i; List.nth new_vars i; Constr("abs", [])]
         | _ -> raise (Failure(dump var))
         in
         Formula("subtype", args)

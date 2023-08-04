@@ -31,20 +31,32 @@ let languagesFromRepo =
 		   files
 
 let repoOfSchemas = 
-    [
-    "./inversion-subtype.lnp"
-    ;
-	"./canonical-sub.lnp"
-	;
-	"./progress-op-sub.lnp"
-	;
-	"./progress-sub.lnp" 
-	;
-    ]
+    (* Without subtyping *)
     (*
+    [
+	"./canonical.lnp"
+	;
+	"./progress-op.lnp"
+	;
+	"./progress.lnp" 
+	;
+    "./error-types-all.lnp"
+    ;
 	"./preservation.lnp" 
 	]
     *)
+    (* With subtyping *)
+    [
+    "./inversion-subtype.lnp"
+    ;
+    "./inversion-typing.lnp"
+    ;
+    "./inversion-error.lnp"
+    ;
+    "./error-types-all-sub.lnp"
+    ;
+	"./preservation-sub.lnp" 
+    ]
 ;;
 
 let parseOneLanguage filename =
@@ -98,7 +110,7 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	let thm_file = open_out ("./generated/" ^ nameOfLanguage ^ ".thm") in
 	output_string thm_file ("Specification \"" ^ nameOfLanguage ^ "\". \n\n"); 
 	output_string thm_file (progressesDefinition); 
-	output_string thm_file (errorTypesAllTheorem lan); 
+	(*output_string thm_file (errorTypesAllTheorem lan); *)
 	List.map (output_string thm_file) (List.map abella_thrAndProof result); 
     close_out thm_file;
 	(* generate language definition .mod *)

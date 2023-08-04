@@ -91,6 +91,11 @@ rule token = parse
   | "endif"               { ENDIF }
   | "skip"               { SKIP }
   | "let"       { LET }
+  | "align"     { ALIGN }
+  | "where"     { WHERE }
+  | "append"    { APPEND }
+  | "targetOfElimForm" { TARGETOFELIMFORM }
+  | "targetOfErrorHandler" { TARGETOFERRORHANDLER }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | name             { NAME (Lexing.lexeme lexbuf) }
   | ['0'-'9']+ as i { INT (int_of_string i) }  

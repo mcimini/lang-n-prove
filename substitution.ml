@@ -34,9 +34,18 @@ let rec substitution_evaluatedExpression evaluatedExpression var term = match ev
 | EqualTerm(t1, t2) -> EqualTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
 | OrTerm(t1, t2) -> OrTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
 | AndTerm(t1, t2) -> AndTerm(substitution_evaluatedExpression t1 var term, substitution_evaluatedExpression t2 var term)
+| Rule(r) -> Rule(r)
 | Dot (t, Var(var2)) -> Dot (substitution_evaluatedExpression t var term,
         member_of_evalExp (substitution_evaluatedExpression (Var(var2)) var term))
 | Dot (t, m) -> Dot (substitution_evaluatedExpression t var term, m)
+| Align(t1, t2, t3, t4) -> Align(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term,
+    substitution_evaluatedExpression t3 var term,
+    substitution_evaluatedExpression t4 var term)
+| TargetOfElimForm(t1, t2) -> TargetOfElimForm(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term)
+| TargetOfErrorHandler(t1, t2) -> TargetOfErrorHandler(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term)
 and substitution_evaluatedExpression_mapversion var term evaluatedExpression = substitution_evaluatedExpression evaluatedExpression var term
 
 let substitution_lnp_name lnp_name var term = match lnp_name with 

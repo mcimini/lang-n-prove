@@ -29,9 +29,13 @@ let language_prettyPrintHypotheticalWrap predname arguments =
 let language_prettyPrintFormula formula = 
 	let predname = formula_getPredname formula in 
 	let arguments = formula_getArguments formula in 
-	if formula_getPredname formula = "typeOf" 
-		then language_prettyPrintHypotheticalWrap predname arguments 
-		else predname ^ " " ^ (String.concat " " (List.map (language_prettyPrintTerm_map_version false) arguments))
+    match predname with
+    | "typeOf" -> language_prettyPrintHypotheticalWrap predname arguments
+    | "subtype" when List.length arguments = 3 ->
+            "(pi X\\ subtype (" ^
+            language_prettyPrintTerm (List.nth arguments 0) false ^ " X) (" ^
+            language_prettyPrintTerm (List.nth arguments 1) false ^ " X))"
+    | _ -> predname ^ " " ^ (String.concat " " (List.map (language_prettyPrintTerm_map_version false) arguments))
 
 let language_prettyPrintRule rule = 
 	let conclusion = rule_getConclusion rule in 

@@ -7,7 +7,10 @@ open Pretty_printer
 let rec abella_evalExp t = match t with 
 	| Var(var) -> var
 	| Name(cname) -> cname
-	| Constructor(cname, ts) -> "(" ^ cname ^ if ts = [] then ")" else " " ^ (String.concat " " (List.map abella_evalExp ts)) ^ ")"
+	| Constructor(cname, ts) -> if cname = "expBinding" then
+                        "(" ^ abella_evalExp (List.hd ts) ^ " x)"
+                else
+                        "(" ^ cname ^ if ts = [] then ")" else " " ^ (String.concat " " (List.map abella_evalExp ts)) ^ ")"
 	| EqualTerm(t1, t2) -> abella_evalExp t1 ^ " = " ^ abella_evalExp t2
 	| Num(n) -> "UNRECOGNIZED: Integer not inserted as string in a term"
 	| ValuesOf(t) -> "UNRECOGNIZED"
@@ -27,9 +30,24 @@ let rec abella_formula formula = match formula with
 	| Top -> "true"
 	| Bottom -> "false"
 	(* Formula are not given a name in the theorem, formulae also come from .mod so they are around brackets { and }  *)
-	| Formula(lnp_name, predname, ts) -> let ts = if predname = "typeOf" then List.tl ts else ts in 
-										 let plainFormula = predname ^ " " ^ (String.concat " " (List.map abella_evalExp ts)) in 
-										 if predname = "progresses" then plainFormula else "{" ^ plainFormula ^ "}"
+	| Formula(lnp_name, predname, ts) -> begin
+        match predname with
+        | "typeOf" -> begin
+            match List.hd ts with
+            | (Constructor("gammaAddx", [e])) -> "(nabla x, {typeOf x " ^ (abella_evalExp e) ^ " => " ^
+                predname ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " x) " ^ (abella_evalExp (List.nth ts 2)) ^ "})"
+            | (Constructor("gammaAddX", _)) -> "(nabla X, {" ^
+                predname ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " X) (" ^ (abella_evalExp (List.nth ts 2)) ^ " X)})"
+            | _ -> "{" ^ predname ^ " " ^ (String.concat " " (List.map abella_evalExp (List.tl ts))) ^ "}"
+        end
+        | "subtype" when List.length ts = 3 ->
+            "(nabla X, {subtype (" ^
+            abella_evalExp (List.nth ts 0) ^ " X) (" ^
+            abella_evalExp (List.nth ts 1) ^ " X)})"
+        | _ ->
+            let plainFormula = predname ^ " " ^ (String.concat " " (List.map abella_evalExp ts)) in 
+            if predname = "progresses" then plainFormula else "{" ^ plainFormula ^ "}"
+    end
 	| Forall(var, formula) -> "forall " ^ var ^ ", " ^ abella_formula formula
 	| Exists(var, formula) -> "exists " ^ var ^ ", " ^ abella_formula formula
 	| EqualFormula(t1, t2) -> abella_evalExp t1 ^ " = " ^ abella_evalExp t2
