@@ -1,0 +1,4 @@
+Theorem SubtypeA-reflexive:
+    forall*, (Main: subtypeA t t).
+Proof.
+skip

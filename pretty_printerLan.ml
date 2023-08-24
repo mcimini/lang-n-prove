@@ -16,6 +16,17 @@ let rec language_prettyPrintTerm t hypotheticalFlag = match t with
 	| Substitution(t1,t2,t3) ->  "(" ^ (language_prettyPrintTerm t1 hypotheticalFlag) ^ " " ^ (language_prettyPrintTerm t2 hypotheticalFlag) ^ ")"
 and language_prettyPrintTerm_map_version hypotheticalFlag t = language_prettyPrintTerm t hypotheticalFlag
 
+let language_prettyPrintExplicitTenv predname arguments =
+	let typeEnv = List.nth arguments 0 in 
+	let argsWithoutTypeEnv = List.tl arguments in 
+    let arg_string hypotheticalFlag args = (String.concat " " (List.map (language_prettyPrintTerm_map_version hypotheticalFlag) args)) in
+	if term_isConstr typeEnv then
+		let plainFormula = predname ^ " " ^ arg_string true argsWithoutTypeEnv in 
+				match typeEnv with 
+					    | (Constr("gammaAddx", [t])) -> "(pi x\\ typeOf (consEnv x " ^ (language_prettyPrintTerm t true) ^ " Gamma) " ^ arg_string true argsWithoutTypeEnv ^ ")"
+						| (Constr("gammaAddX", [])) -> "(pi x\\ " ^ plainFormula ^ ")"
+		else predname ^ " " ^ arg_string false arguments
+
 let language_prettyPrintHypotheticalWrap predname arguments = 
 	let typeEnv = List.nth arguments 0 in 
 	let argsWithoutTypeEnv = List.tl arguments in 
@@ -30,7 +41,7 @@ let language_prettyPrintFormula formula =
 	let predname = formula_getPredname formula in 
 	let arguments = formula_getArguments formula in 
     match predname with
-    | "typeOf" -> language_prettyPrintHypotheticalWrap predname arguments
+    | "typeOf" -> if explicit_tenv then language_prettyPrintExplicitTenv predname arguments else language_prettyPrintHypotheticalWrap predname arguments
     | "subtype" when List.length arguments = 3 ->
             "(pi X\\ subtype (" ^
             language_prettyPrintTerm (List.nth arguments 0) false ^ " X) (" ^
@@ -55,6 +66,7 @@ let language_prettyPrintRules lan =
 	let allTypingRules = language_getTypingRules lan in
 	let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
     *)
+    let builtinPrednames = ["typeOf"; "step"; "subtype"; "value"; "error"] in
 	let expressionCNAMES = List.map term_getCNAME (language_grammarLookupByCategory lan "Expression") in 
 	(* print typing rules as they appear in Expression *)
 		(*String.concat "\n" (List.map (fun e -> language_prettyPrintRule (List.assoc e mapOpToTypingRule)) expressionCNAMES)*)
@@ -72,6 +84,8 @@ let language_prettyPrintRules lan =
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Context"))
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "ErrorContext"))
 		^ String.concat "\n" (List.map language_prettyPrintRule (language_subtypeDeclarationsAsRules lan))
+		^ String.concat "\n" (List.map language_prettyPrintRule
+            (List.filter (fun r -> not (List.mem (rule_getConclusionPredname r) builtinPrednames)) (language_getRules lan)))
 
 let language_prettyPrintExpressions_in_TypingRules_order lan = 
 	let allTypingRules = language_getTypingRules lan in

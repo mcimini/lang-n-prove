@@ -1,0 +1,28 @@
+Theorem Existence-of-join-and-meet :
+ (forall*, (Main: subtypeA t1 t3) -> (H1: subtypeA t2 t3) -> exists*, (_: join t1 t2 t4) /\ (_: subtypeA t4 t3))
+ /\
+ (forall*, (Main: subtypeA t1 t2) -> (H1: subtypeA t1 t3) -> exists*, (_: meet t2 t3 t4) /\ (_: subtypeA t1 t4)).
+Proof.
+(Prem 0): mutual induction on Main Main.
+first:
+    for each ty in Type:
+        (Subtype _): case H1.
+        for each i in ty.rule[join].premisesIdx[join]:
+            _: apply IH0 to (Prem i) (Subtype i)
+        endfor.
+        for each i in ty.rule[join].premisesIdx[meet]:
+            _: apply IH1 to (Prem i) (Subtype i)
+        endfor.
+        search
+    endfor
+second:
+    for each ty in Type:
+        (Subtype _): case H1.
+        for each i in ty.rule[meet].premisesIdx[join]:
+            _: apply IH0 to (Prem i) (Subtype i)
+        endfor.
+        for each i in ty.rule[meet].premisesIdx[meet]:
+            _: apply IH1 to (Prem i) (Subtype i)
+        endfor.
+        search
+    endfor

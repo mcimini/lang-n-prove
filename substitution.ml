@@ -42,6 +42,11 @@ let rec substitution_evaluatedExpression evaluatedExpression var term = match ev
     substitution_evaluatedExpression t2 var term,
     substitution_evaluatedExpression t3 var term,
     substitution_evaluatedExpression t4 var term)
+| Covariant(t1, t2) -> Covariant(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term)
+| FindVarInPremises(t1, t2) -> FindVarInPremises(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term)
+| VarsOf(t) -> VarsOf(substitution_evaluatedExpression t var term)
 | TargetOfElimForm(t1, t2) -> TargetOfElimForm(substitution_evaluatedExpression t1 var term,
     substitution_evaluatedExpression t2 var term)
 | TargetOfErrorHandler(t1, t2) -> TargetOfErrorHandler(substitution_evaluatedExpression t1 var term,
@@ -50,7 +55,9 @@ and substitution_evaluatedExpression_mapversion var term evaluatedExpression = s
 
 let substitution_lnp_name lnp_name var term = match lnp_name with 
 	| SuffixedString(str, evaluatedExpression) -> SuffixedString(str, substitution_evaluatedExpression evaluatedExpression var term)
-	| _ -> lnp_name
+    | Function(name, args) -> Function(name, List.map (substitution_evaluatedExpression_mapversion var term) args)
+    | ApplyFromList(name, evaluatedExpression) -> ApplyFromList(name, substitution_evaluatedExpression evaluatedExpression var term)
+	| String(_) -> lnp_name
 let substitution_lnp_name_map_version var term lnp_name = substitution_lnp_name lnp_name var term
 
 let rec substitution_formula formula var term = match formula with 
@@ -81,8 +88,9 @@ let rec substitution_proof proof var term = match proof with
 	| Case(lnp_name1, lnp_name2) -> Case(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term)
 	| CaseStar(lnp_name1, lnp_name2, proof) -> CaseStar(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term, substitution_proof proof var term)
 	| Induction(lnp_name1, lnp_name2) -> Induction(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term)
+	| MutualInduction(lnp_name1, lnp_name2, lnp_name3, proof1, proof2) -> MutualInduction(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term, substitution_lnp_name lnp_name3 var term, substitution_proof proof1 var term, substitution_proof proof2 var term)
 	| InductionStar(lnp_name1, lnp_name2, proof) -> InductionStar(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term, substitution_proof proof var term)
-	| Apply(lnp_name1, lnp_name2, lnp_names) -> Apply(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term, List.map (substitution_lnp_name_map_version var term) lnp_names)
+	| Apply(lnp_name1, lnp_name2, lnp_names, inst) -> Apply(substitution_lnp_name lnp_name1 var term, substitution_lnp_name lnp_name2 var term, List.map (substitution_lnp_name_map_version var term) lnp_names, inst) (* inst are always literals *)
 	| Backchain(lnp_name) -> Backchain(substitution_lnp_name lnp_name var term)
 	| If(t, proof1, proof2) -> If(substitution_evaluatedExpression t var term, substitution_proof proof1 var term, substitution_proof proof2 var term)
 	| ForEachProof(var2, t, proof) -> ForEachProof(var2, substitution_evaluatedExpression t var term, substitution_proof proof var term)

@@ -35,9 +35,12 @@ rule token = parse
   | "forall"               { FORALL }
   | "."               { DOT }
   | "premises"        { PREMISES }
+  | "premisesIdx"     { PREMISESIDX }
   | "rule"            { RULE }
   | "<:" { SUBTYPING }
+  | "<a" { SUBTYPINGA }
   | "|-" { TURNSTYLE }
+  | "|a-" { TURNSTYLEA }
   | "-->" { STEP }
   | "forallVars"               { FORALLVARS }
   | "->"            { IMPLY }
@@ -68,9 +71,12 @@ rule token = parse
   | "noOp"            { NOP }
   | "exists*"               { EXISTSTAR }
   | "exists"               { EXISTS }
+  | "mutual"               { MUTUAL }
   | "induction"            { INDUCTION }
   | "induction*"            { INDUCTIONSTAR }
   | "on"             { ON }
+  | "first"          { FIRST }
+  | "second"         { SECOND }
   | "endfor"               { ENDFOR }
   | "apply"             { APPLY }
   | "to"             { TO }
@@ -94,6 +100,11 @@ rule token = parse
   | "align"     { ALIGN }
   | "where"     { WHERE }
   | "append"    { APPEND }
+  | "covariant" { COVARIANT }
+  | "<="        { REVERSEIMPLY }
+  | "find"      { FIND }
+  | "varsOf"    { VARSOF }
+  | "with"      { WITH }
   | "targetOfElimForm" { TARGETOFELIMFORM }
   | "targetOfErrorHandler" { TARGETOFERRORHANDLER }
   | var             { VAR (Lexing.lexeme lexbuf) }

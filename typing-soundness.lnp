@@ -1,0 +1,9 @@
+Theorem Typing-sound: forall*, (TypingA: typeOfA gamma e t) -> (_: typeOf gamma e t).
+Proof.
+TypingA_(0): induction on TypingA.
+for each e in Expression:
+    for each i in e.rule[|a-].premisesIdx[|a-]: _: apply IH0 to TypingA_(i) endfor.
+    for each i in e.rule[|a-].premisesIdx[<a]: _: apply Subtyping-sound to TypingA_(i) endfor.
+    for each i in e.rule[|a-].premisesIdx[join]: _: apply Join-implies-subtyping to TypingA_(i) endfor.
+    search
+endfor

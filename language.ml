@@ -2,6 +2,8 @@ open Batteries
 open Option
 open List
 
+let explicit_tenv = true
+
 type term = 
 	| Constr of string * (term list)
 	| LangVar of string
@@ -51,10 +53,12 @@ let language_getGrammar (Language(grammar, _)) = grammar
 let language_getRules (Language(_, rules)) = rules
 let language_addRules (Language(grammar, rest)) rules = Language(grammar, rest @ rules)
 
-let rule_getInputOfConclusion (Rule(_,Formula(predname,ts))) = if predname = "typeOf" then List.nth ts 1 else List.hd ts
+let rule_getInputOfConclusion (Rule(_,Formula(predname,ts))) =
+    if predname = "typeOf" || predname = "typeOfA" then List.nth ts 1 else List.hd ts
 let rule_getOutputOfConclusion (Rule(_,Formula(_,ts))) = List.last ts
 let rule_getPremises (Rule(premises,_)) = premises
 let rule_getConclusion (Rule(_,conclusion)) = conclusion
+let rule_getConclusionPredname (Rule(_,Formula(predname,_))) = predname
 
 let formula_getArguments (Formula(predname,ts)) = ts
 let formula_getPredname (Formula(predname,_)) = predname

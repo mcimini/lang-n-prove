@@ -1,0 +1,7 @@
+Theorem Subtyping-sound: forall*, (SubtypeA: subtypeA t1 t2) -> (_: subtype t1 t2).
+Proof.
+SubtypeA_(0): induction on SubtypeA.
+for each ty in Type:
+    for each i in ty.rule[<a].premisesIdx[<a]: _: apply IH0 to SubtypeA_(i) endfor.
+    search
+endfor

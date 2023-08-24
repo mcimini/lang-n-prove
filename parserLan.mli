@@ -8,7 +8,9 @@ type token =
   | VARBIGX
   | VALUEPRED
   | VALUECTX
+  | TURNSTYLEA
   | TURNSTYLE
+  | SUBTYPINGA
   | SUBTYPING
   | SUBSTBAR
   | STEP
@@ -16,8 +18,10 @@ type token =
   | RIGHTPAR
   | PROVIDED
   | MID
+  | MEET
   | LEFTSQUARE
   | LEFTPAR
+  | JOIN
   | INT of (int)
   | GRAMMARASSIGN
   | GAMMA

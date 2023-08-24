@@ -49,7 +49,8 @@ let rec print_proof proof = match proof with
 	| CaseStar(lnp_name1, lnp_name2, proof) -> print_lnp_name lnp_name1 ^ ": " ^ "case* " ^ print_lnp_name lnp_name2 ^ " in " ^ print_proof proof
 	| Induction(lnp_name1, lnp_name2) -> print_lnp_name lnp_name1 ^ ": " ^ "induction on " ^ print_lnp_name lnp_name2
 	| InductionStar(lnp_name1, lnp_name2, proof) -> print_lnp_name lnp_name1 ^ ": " ^ "induction* on" ^ print_lnp_name lnp_name2 ^ " in " ^ print_proof proof
-	| Apply(lnp_name1, lnp_name2, lnp_names) -> print_lnp_name lnp_name1 ^ ": " ^ "apply " ^ print_lnp_name lnp_name2 ^ " to " ^ (String.concat " " (List.map print_lnp_name lnp_names))
+	| Apply(lnp_name1, lnp_name2, lnp_names, None) -> print_lnp_name lnp_name1 ^ ": " ^ "apply " ^ print_lnp_name lnp_name2 ^ " to " ^ (String.concat " " (List.map print_lnp_name lnp_names))
+	| Apply(lnp_name1, lnp_name2, lnp_names, Some (var1, var2)) -> print_proof (Apply(lnp_name1, lnp_name2, lnp_names, None)) ^ " with " ^ var1 ^ " = " ^ var2
 	| Backchain(lnp_name) -> "backchain on " ^ print_lnp_name lnp_name
 	| If(t, proof1, proof2) -> "if " ^ print_evalExp t ^ " then " ^ print_proof proof1 ^ " else " ^ print_proof proof2
 	| ForEachProof(var, t, proof) -> "for each " ^ var ^ " in " ^ print_evalExp t ^ ": " ^ print_proof proof ^ " endfor"

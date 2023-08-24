@@ -11,20 +11,24 @@ type member =
     | Var of var
     | Num of int
     | Relation of predname
-    | Premises
+    | Premises of string option
+    | PremisesIdx of predname
 
 type lnp_name = 
 	| String of string
 	| SuffixedString of string * evaluatedExpression
+    | Function of string * evaluatedExpression list
+    | ApplyFromList of string * evaluatedExpression
 and evaluatedExpression =
   | Var of var
   | Num of int 
   | Name of cname 
+  | Premise of int * Language.formula
   | Constructor of cname * evaluatedExpression list
   | ValuesOf of evaluatedExpression 
   | ValueArgs of evaluatedExpression 
   | OfType of evaluatedExpression 
-  | IsVar of evaluatedExpression (* not in use *)
+  | IsVar of evaluatedExpression
   | IsSingleValue of evaluatedExpression 
   | TargetV of evaluatedExpression 
   | TargetOp of evaluatedExpression 
@@ -45,6 +49,9 @@ and evaluatedExpression =
   | Formula of Language.formula
   | Align of evaluatedExpression * evaluatedExpression * evaluatedExpression * evaluatedExpression
   | Append of evaluatedExpression * evaluatedExpression
+  | Covariant of evaluatedExpression * evaluatedExpression
+  | FindVarInPremises of evaluatedExpression * evaluatedExpression
+  | VarsOf of evaluatedExpression
   | TargetOfElimForm of evaluatedExpression * evaluatedExpression
   | TargetOfErrorHandler of evaluatedExpression * evaluatedExpression
   
@@ -77,8 +84,9 @@ type proof =
   | Case of lnp_name * lnp_name 
   | CaseStar of lnp_name * lnp_name * proof (* not in use *)
   | Induction of lnp_name * lnp_name 
+  | MutualInduction of lnp_name * lnp_name * lnp_name * proof * proof
   | InductionStar of lnp_name * lnp_name * proof (* not in use *)
-  | Apply of lnp_name * lnp_name * lnp_name list
+  | Apply of lnp_name * lnp_name * lnp_name list * (var * var) option
   | Backchain of lnp_name 
   | If of evaluatedExpression * proof * proof
   | ForEachProof of var * evaluatedExpression * proof
@@ -135,17 +143,31 @@ let rec term_getVars exp = match exp with
 
 let term_getNthArg (Constructor(cname, ts)) n = List.nth ts n
 
+let rec term_hasBinding t : bool = match t with 
+	| Constructor(cname,ts) -> if cname = "expBinding" then true else List.exists term_hasBinding ts
+	| _ -> false
+
 let rec term_constains_substitution t : bool = match t with 
 	| Constructor(cname,ts) -> if cname = "substitution" then true else List.exists term_constains_substitution ts
 	| _ -> false
 
-	
-let term_list_mem exp listOfexps : bool = List.mem (term_getConstructorName exp) (List.map term_getConstructorName listOfexps)
+let term_stripIfConstructor exp = match exp with
+    | Constructor (cname, _) -> Constructor (cname, [])
+    | Var (_) -> exp
+
+let term_list_mem exp listOfexps : bool = List.mem (term_stripIfConstructor exp) (List.map term_stripIfConstructor listOfexps)
+
 let term_list_mem_upToNumbers exp listOfexps : bool = 
 	let foundItem = List.filter (fun t -> term_list_mem exp [t]) listOfexps in 
 	if foundItem = [] then false else let foundItem = List.hd foundItem in 
 	(* We also need to match E1 with R1.  *)
-	let equalupToNumbers (Var(var1),Var(var2)) : bool = 
+    let getVarName t = match t with
+        | Var v -> v
+        | Constructor ("expBinding", [Var v]) -> v
+    in
+	let equalupToNumbers (t1, t2) : bool = 
+        let var1 = getVarName t1 in
+        let var2 = getVarName t2 in
 	(*	let t = raise(Failure("equalupToNumbers: " ^ var1 ^ (String.make 1 (String.get var1 0)) ^ var2 ^ (String.make 1 (String.get var2 0)) ^ (string_of_bool (String.starts_with var2 "R"))))  in 
 String.get var1 0 = String.get var2 0 || String.get var1 0 = 'R' || String.get var2 1 = 'R') in *)
 			(String.starts_with var1 "R" || String.starts_with var1 (String.make 1 (String.get var2 0)) || 
@@ -165,7 +187,10 @@ let rec map_names_formulae_in_theorem formula = match formula with
 	| Formula(String s, predname, ts) -> if s = "_" then [] else [(s, Formula(String s, predname, ts))]
 	| Imply(formula1, formula2) -> map_names_formulae_in_theorem formula1 @ map_names_formulae_in_theorem formula2
 	| Forall(var, formula) -> map_names_formulae_in_theorem formula
+	| ForallStar(formula) -> map_names_formulae_in_theorem formula
 	| Exists(var, formula) -> map_names_formulae_in_theorem formula
+	| ExistStar(formula) -> map_names_formulae_in_theorem formula
+    | And(formula1, formula2) -> map_names_formulae_in_theorem formula1 @ map_names_formulae_in_theorem formula2
 	| _ -> []
 
 let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 

@@ -1,0 +1,23 @@
+Theorem Typing-complete: forall gamma, forall*, (Main: typeOf gamma e t1) -> exists*, (_: typeOfA gamma e t2) /\ (_: subtype t2 t1).
+Proof.
+(Prem _): induction on Main.
+for each e in Expression:
+    for each p in e.rule[|a-].premises[|a-]:
+        (Derived p _): apply IH0 to (Prem p).
+        if isVar(p.out) then
+            (SubtypeA p _): apply Subtyping-complete to (Derived p 1)
+        else
+            (SubtypeA p _): apply Inversion-subtypeA-_(p.out) to (Derived p 1).
+            _: apply Inversion-subtype-_(p.out) to (Derived p 1)
+        endif
+    endfor.
+    for each p in e.rule[|a-].premises[<a]:
+        _: apply SubtypeA-transitive to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-])
+    endfor.
+    for each p in e.rule[|a-].premises[join]:
+        (Join _): apply Existence-of-join to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-]).
+        _: apply Subtyping-sound to (Join 1)
+    endfor.
+    search
+endfor.
+_: apply IH0 to (Prem 0). search

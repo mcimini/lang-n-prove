@@ -1,0 +1,4 @@
+Theorem Join-implies-subtypingA : 
+ forall*, (Main: join t1 t2 t3) -> (_: subtypeA t1 t3) /\ (_: subtypeA t2 t3).
+Proof.
+_: apply Join-and-meet-implies-subtyping to . search

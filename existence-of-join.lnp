@@ -1,0 +1,4 @@
+Theorem Existence-of-join :
+ forall*, (Main: subtypeA t1 t3) -> (H1: subtypeA t2 t3) -> exists*, (_: join t1 t2 t4) /\ (_: subtypeA t4 t3).
+Proof.
+_: apply Existence-of-join-and-meet to . search

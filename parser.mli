@@ -2,11 +2,14 @@
 (* The type of tokens. *)
 
 type token = 
+  | WITH
   | WHERE
+  | VARSOF
   | VAR of (string)
   | VALUESOF
   | VALUEARGS
   | UNDERSCORE
+  | TURNSTYLEA
   | TURNSTYLE
   | TO
   | THEOREM
@@ -15,14 +18,18 @@ type token =
   | TARGETOP
   | TARGETOFERRORHANDLER
   | TARGETOFELIMFORM
+  | SUBTYPINGA
   | SUBTYPING
   | STEP
   | SKIP
+  | SECOND
   | SEARCH
   | RULE
   | RSQUARE
   | RPAREN
+  | REVERSEIMPLY
   | PROOF
+  | PREMISESIDX
   | PREMISES
   | ORTERM
   | ORMACRO
@@ -31,6 +38,7 @@ type token =
   | OFTYPE
   | NOP
   | NAME of (string)
+  | MUTUAL
   | LSQUARE
   | LPAREN
   | LET
@@ -55,6 +63,8 @@ type token =
   | FORALLSTAR
   | FORALL
   | FOR
+  | FIRST
+  | FIND
   | EXISTSVARS
   | EXISTSTAR
   | EXISTS
@@ -69,6 +79,7 @@ type token =
   | ELSE
   | EACH
   | DOT
+  | COVARIANT
   | CONTEXTARGS
   | CONTAINSSUB
   | COMMA

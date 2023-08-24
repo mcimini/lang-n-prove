@@ -30,10 +30,9 @@ let languagesFromRepo =
 		   [] contents in 
 		   files
 
-let repoOfSchemas = 
-    (* Without subtyping *)
+let repoOfSchemas = [
     (*
-    [
+    (* Soundness without subtyping *)
 	"./canonical.lnp"
 	;
 	"./progress-op.lnp"
@@ -43,10 +42,11 @@ let repoOfSchemas =
     "./error-types-all.lnp"
     ;
 	"./preservation.lnp" 
-	]
+    ;
     *)
-    (* With subtyping *)
-    [
+
+    (*
+    (* Soundness with only declarative subtyping *)
     "./inversion-subtype.lnp"
     ;
     "./inversion-typing.lnp"
@@ -55,7 +55,62 @@ let repoOfSchemas =
     ;
     "./error-types-all-sub.lnp"
     ;
-	"./preservation-sub.lnp" 
+	"./preservation-sub.lnp"
+    ;
+    *)
+
+    (* Soundness with only algorithmic subtyping *)
+	"./canonical.lnp"
+	;
+	"./progress-op.lnp"
+	;
+	"./progress.lnp"
+	;
+    "subtypingA-transitivity-double.lnp"
+    ;
+    "subtypingA-transitivity.lnp"
+    ;
+    "subtypingA-reflexivity.lnp"
+    ;
+    "join-and-meet-implies-subtypingA.lnp"
+    ;
+    "join-implies-subtypingA.lnp"
+    ;
+    "error-types-all.lnp"
+    ;
+    "preservation-subA.lnp"
+    ;
+
+    (*
+    (* Equivalence of algorithmic and declaritive subtyping *)
+    "./inversion-subtype.lnp"
+    ;
+    "subtyping-soundness.lnp"
+    ;
+    "join-and-meet-implies-subtyping.lnp"
+    ;
+    "join-implies-subtyping.lnp"
+    ;
+    "typing-soundness.lnp"
+    ;
+    "subtypingA-transitivity-double.lnp"
+    ;
+    "subtypingA-transitivity.lnp"
+    ;
+    "subtypingA-reflexivity.lnp"
+    ;
+    "subtyping-complete.lnp"
+    ;
+    "inversion-subtypeA.lnp"
+    ;
+    "existence-of-join-and-meet.lnp"
+    ;
+    "existence-of-join.lnp"
+    ;
+    "typing-complete.lnp"
+    ;
+    *)
+
     ]
 ;;
 
@@ -66,8 +121,8 @@ let parseOneLanguage filename =
   let filebuf = Lexing.from_input input in
   let unusedVar = print_endline ("Reading the language: " ^ filename) in 
   let lan = try (ParserLan.fileLan LexerLan.token filebuf) with
-						    | LexerLan.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
-						    | ParserLan.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
+						    | LexerLan.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
+						    | ParserLan.Error -> raise(Failure(filename ^ ": Parser error: " ^ get_positions filebuf)) in
    let unusedVar = IO.close_in input; in 
       (language_addRules lan (language_subtypeDeclarationsAsRules lan))
 
@@ -76,8 +131,8 @@ let parseTheSchema filename =
    let inputSchema = (open_in filename) in
    let filebuf = Lexing.from_input inputSchema in
    let schema = try (Parser.file Lexer.token filebuf) with
- 						    | Lexer.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
- 						    | Parser.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
+ 						    | Lexer.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
+ 						    | Parser.Error -> raise(Failure(filename ^ ": Parser error: " ^ get_positions filebuf)) in
 
    let unusedVar = IO.close_in inputSchema; in 
        schema
@@ -109,6 +164,7 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	(* generate Abella proof .thm *)
 	let thm_file = open_out ("./generated/" ^ nameOfLanguage ^ ".thm") in
 	output_string thm_file ("Specification \"" ^ nameOfLanguage ^ "\". \n\n"); 
+    output_string thm_file "Close typ. Close term.\n\n";
 	output_string thm_file (progressesDefinition); 
 	(*output_string thm_file (errorTypesAllTheorem lan); *)
 	List.map (output_string thm_file) (List.map abella_thrAndProof result); 

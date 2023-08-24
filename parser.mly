@@ -22,10 +22,13 @@
 %token FORALL
 %token DOT
 %token PREMISES
+%token PREMISESIDX
 %token RULE
 %token TURNSTYLE
+%token TURNSTYLEA
 %token STEP
 %token SUBTYPING
+%token SUBTYPINGA
 %token FORALLVARS
 %token IMPLY
 %token ORMACRO
@@ -53,9 +56,12 @@
 %token THEN
 %token ELSE
 %token NOP
+%token MUTUAL
 %token INDUCTION
 %token INDUCTIONSTAR
 %token ON
+%token FIRST
+%token SECOND
 %token ENDFOR
 %token APPLY
 %token TO
@@ -80,6 +86,11 @@
 %token ALIGN
 %token WHERE
 %token APPEND
+%token COVARIANT
+%token REVERSEIMPLY
+%token FIND
+%token VARSOF
+%token WITH
 %token TARGETOFELIMFORM
 %token TARGETOFERRORHANDLER
 
@@ -162,18 +173,28 @@ evalExp:
       { Align(t1, t2, Var(var1), Var(var2)) }
   | APPEND LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
       { Append(t1, t2) }
+  | COVARIANT LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
+      { Covariant(t1, t2) }
+  | FIND t1 = evalExp IN t2 = evalExp
+      { FindVarInPremises(t1, t2) }
+  | VARSOF LPAREN t1 = evalExp RPAREN
+      { VarsOf(t1) }
   | TARGETOFELIMFORM LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
       { TargetOfElimForm(t1, t2) }
   | TARGETOFERRORHANDLER LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
       { TargetOfErrorHandler(t1, t2) }
-  | var = VAR IN t = evalExp 
-      { InList(Var var,t) }
+  | t1 = evalExp IN t2 = evalExp 
+      { InList(t1,t2) }
   | var = VAR IS t = evalExp 
       { IS(Var var,t) }
   | LPAREN var = VAR EQUAL t = evalExp RPAREN
       { EqualTerm(Var var, t) }
   | t1 = evalExp DOT PREMISES
-      { Dot(t1, Premises) }
+      { Dot(t1, Premises(None)) }
+  | t1 = evalExp DOT PREMISESIDX LSQUARE r = relation RSQUARE
+      { Dot(t1, PremisesIdx(r)) }
+  | t1 = evalExp DOT PREMISES LSQUARE r = relation RSQUARE
+      { Dot(t1, Premises(Some(r))) }
   | t1 = evalExp DOT t2 = VAR
       { Dot(t1, Var(t2)) }
   | t1 = evalExp DOT RULE LSQUARE r = relation RSQUARE
@@ -186,10 +207,16 @@ evalExp:
 relation:
     | TURNSTYLE
         {"typeOf"}
+    | TURNSTYLEA
+        {"typeOfA"}
     | STEP
         {"step"}
     | SUBTYPING
         {"subtype"}
+    | SUBTYPINGA
+        {"subtypeA"}
+    | predname = VAR
+        {predname}
 
 lnp_name:
 	| UNDERSCORE
@@ -198,7 +225,16 @@ lnp_name:
 	  {String name }
  	| name = NAME UNDERSCORE LPAREN t = evalExp RPAREN
       {SuffixedString(name,t) }
+    | LPAREN name = NAME args = list(hypParam) RPAREN
+      {Function(name, args)}
+    | LPAREN name = NAME REVERSEIMPLY t = evalExp RPAREN
+      {ApplyFromList(name, t)}
 
+hypParam:
+    | UNDERSCORE
+        {Var("_")}
+    | e = evalExp
+        {e}
 
 
 
@@ -237,6 +273,8 @@ formula:
         { Imply(f1, f2) }
     | f1 = formula AND f2 = formula
         { And(f1, f2) }
+    | LPAREN f1 = formula RPAREN AND LPAREN f2 = formula RPAREN
+        { And(f1, f2) }
 
 proof:
   | INTROS 
@@ -253,10 +291,12 @@ proof:
     { CaseStar(name1, name2, p) }
   | name1 = lnp_name COLON INDUCTION ON name2 = lnp_name 
     { Induction(name1, name2) }
+  | name1 = lnp_name COLON MUTUAL INDUCTION ON name2 = lnp_name name3 = lnp_name DOT FIRST COLON p1 = proof SECOND COLON p2 = proof
+    { MutualInduction(name1, name2, name3, p1, p2) }
   | name1 = lnp_name COLON INDUCTIONSTAR ON name2 = lnp_name IN p = proof
       { InductionStar(name1, name2, p) }
-  | name1 = lnp_name COLON APPLY name2 = lnp_name TO names = list(lnp_name)
-      { Apply(name1, name2, names) }
+  | name1 = lnp_name COLON APPLY name2 = lnp_name TO names = list(lnp_name) instantiation = option(WITH var1 = VAR EQUAL var2 = VAR { (var1, var2) })
+      { Apply(name1, name2, names, instantiation) }
   | BACKCHAIN ON name = lnp_name 
       { Backchain(name) }
   | IF t = evalExp THEN p1 = proof ELSE p2 = proof option(ENDIF)

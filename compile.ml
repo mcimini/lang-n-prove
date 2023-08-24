@@ -62,7 +62,22 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
         else
             raise (Failure("Expected exactly one " ^ pred ^ " rule for constructor " ^ name ^ "."))
     | Dot(Rule r, Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments (rule_getConclusion r)) n))
-    | Dot(Rule r, Premises) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
+    | Dot(Rule r, Premises(None)) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
+    | Dot(Premise(i, p), Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments p) n))
+    | Dot(t, Premises(Some(predname))) ->
+        let (Lnp.Rule r) = (eval_getTerm (eval lan t)) in
+        let premises = (rule_getPremises r) in
+        ListOfTerms (
+            (List.filter
+                (fun (Premise(i, p)) -> formula_getPredname p = predname)
+                (List.mapi (fun i p -> Premise(i, p)) premises)))
+    | Dot(t, PremisesIdx predname) ->
+        let (Lnp.Rule r) = (eval_getTerm (eval lan t)) in
+        let premises = (rule_getPremises r) in
+        ListOfTerms (List.map numberToNumTerm
+            (List.filter
+                (fun i -> formula_getPredname (List.nth premises i) = predname)
+                (List.mapi (fun i _ -> i) premises)))
     | Rule(_) | Formula(_) -> Term(evaluatedExpression)
     | Align(t1, t2, Num n1, Num n2) ->
         let (Lnp.Rule(r1)) = eval_getTerm (eval lan t1) in
@@ -77,10 +92,43 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
         let left = eval_getListOfTerms (eval lan t1) in
         let right = eval_getListOfTerms (eval lan t2) in
         ListOfTerms (left @ right)
+    | Covariant(t1, t2) ->
+        let i = eval_getNumber (eval lan t1) in
+        let ty = term_getConstructorName (eval_getTerm (eval lan t2)) in
+        let category = if language_grammarCatagoryExists lan "Subtyping" then "Subtyping" else "SubtypingA" in
+        let subtyping = language_grammarLookupByCategory lan category in
+        let ty_constr = List.find (fun (Constr(cname, _)) -> cname = ty) subtyping in
+        let LangVar(variance) = List.nth (term_getArguments ty_constr) i in
+        Boolean (String.starts_with variance "Cov" || String.starts_with variance "AbsCov")
+    | FindVarInPremises(t1, t2) ->
+        let var = List.hd (term_getVars (eval_getTerm (eval lan t1))) in
+        let premises = List.map (fun (Premise(i, p)) -> p) (eval_getListOfTerms (eval lan t2)) in
+        let rec find_outer prems i =
+            match prems with
+            | [] -> raise (Failure(var ^ " not found."))
+            | prem :: rest_prems ->
+                let rec find_inner vars j =
+                    match vars with
+                    | [] -> find_outer rest_prems (i + 1)
+                    | first :: _ when first = var -> ListOfTerms([Num(i); Num(j)])
+                    | _ :: rest_vars -> find_inner rest_vars (j + 1)
+                in
+                let vars = (formula_getArguments prem) |> List.last |>
+                    langConstructor_to_LNPConstructor |> term_getVars
+                in find_inner vars 0
+        in find_outer premises 0
+    | VarsOf(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        ListOfTerms (List.map (fun v -> Var v) (term_getVars e))
     | TargetOfElimForm(t1, t2) | TargetOfErrorHandler(t1, t2) ->
         let elim = (term_getConstructorName (eval_getTerm (eval lan t1))) in
         let value = (term_getConstructorName (eval_getTerm (eval lan t2))) in
         Term (langConstructor_to_LNPConstructor (tmp_name_fix lan elim value))
+
+let hypParamAsStr arg = match arg with
+    | Var("_") -> "0"
+    | Premise(i, _) -> string_of_int i
+    | Num(n) -> string_of_int n
 
 let compile_lnp_name lan lnp_name = match lnp_name with 
 	| SuffixedString(str, evaluatedExpression) -> let suffix = (match eval lan evaluatedExpression with 
@@ -88,6 +136,11 @@ let compile_lnp_name lan lnp_name = match lnp_name with
 														| Number(n) -> string_of_int n
 														| _ -> "Wrong term computed as suffix to append to a name")
 													in String (str ^ suffix)
+    | Function(name, args) ->
+        String(name ^ "-" ^ (String.concat "-" (List.map hypParamAsStr args)))
+    | ApplyFromList(name, evaluatedExpression) ->
+        let args = eval_getListOfTerms (eval lan evaluatedExpression) in
+        String(name ^ "-" ^ (String.concat "-" (List.map hypParamAsStr args)))
 	| _ -> lnp_name
 	
 let rec compile_formula lan formula = match formula with 
@@ -146,8 +199,9 @@ let rec compile_proof lan names proof = match proof with
 | Case(lnp_name1, lnp_name2) -> Case(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2)
 | CaseStar(lnp_name1, lnp_name2, proof) -> NoOp
 | Induction(lnp_name1, lnp_name2) -> Induction(compile_lnp_name lan lnp_name1,compile_lnp_name lan lnp_name2)
+| MutualInduction(lnp_name1, lnp_name2, lnp_name3, proof1, proof2) -> MutualInduction(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, compile_lnp_name lan lnp_name3, compile_proof lan names proof1, compile_proof lan names proof2)
 | InductionStar(lnp_name1, lnp_name2, proof) -> NoOp
-| Apply(lnp_name1, lnp_name2, lnp_names) -> Apply(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, List.map (compile_lnp_name lan) lnp_names)
+| Apply(lnp_name1, lnp_name2, lnp_names, inst) -> Apply(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, List.map (compile_lnp_name lan) lnp_names, inst)
 | Backchain(lnp_name) -> Backchain(compile_lnp_name lan lnp_name)
 | If(t, proof1, proof2) -> if eval_getBoolean (eval lan t) then compile_proof lan names proof1 else compile_proof lan names proof2
 | ForEachProof(var, t, proof) -> makeSeq (List.map (compile_proof lan names) (List.map (substitution_proof proof var) (eval_getListOfTerms (eval lan t))))

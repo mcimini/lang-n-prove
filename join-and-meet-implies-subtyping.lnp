@@ -1,0 +1,26 @@
+Theorem Join-and-meet-implies-subtyping : 
+ (forall*, (Main: join t1 t2 t3) -> (_: subtype t1 t3) /\ (_: subtype t2 t3))
+ /\
+ (forall*, (Main: meet t1 t2 t3) -> (_: subtype t3 t1) /\ (_: subtype t3 t2)).
+Proof.
+(Prem 0): mutual induction on Main Main.
+first:
+    for each ty in Type:
+        for each i in ty.rule[join].premisesIdx[join]:
+            _: apply IH0 to (Prem i)
+        endfor.
+        for each i in ty.rule[join].premisesIdx[meet]:
+            _: apply IH1 to (Prem i)
+        endfor.
+        search
+    endfor
+second:
+    for each ty in Type:
+        for each i in ty.rule[meet].premisesIdx[join]:
+            _: apply IH0 to (Prem i)
+        endfor.
+        for each i in ty.rule[meet].premisesIdx[meet]:
+            _: apply IH1 to (Prem i)
+        endfor.
+        search
+    endfor
