@@ -164,6 +164,7 @@ let term_list_mem_upToNumbers exp listOfexps : bool =
     let getVarName t = match t with
         | Var v -> v
         | Constructor ("expBinding", [Var v]) -> v
+        | Constructor ("typeBinding", [Var v]) -> v
     in
 	let equalupToNumbers (t1, t2) : bool = 
         let var1 = getVarName t1 in
