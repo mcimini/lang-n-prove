@@ -214,7 +214,7 @@ let rec formula_free_vars (formula: formula): var list =
     | Top -> []
     | Bottom -> []
     | Formula(lnp_name, predname, ts) ->
-        let ts = if predname = "typeOf" then List.tl ts else ts in
+        let ts = if predname = "typeOf" && not explicit_tenv then List.tl ts else ts in
         List.concat (List.map term_getVars ts)
     | Forall(var2, formula) -> list_difference (formula_free_vars formula) [var2]
 	| Exists(var2, formula) -> list_difference (formula_free_vars formula) [var2]
@@ -232,3 +232,9 @@ let rec formula_free_vars (formula: formula): var list =
     | Let(var, t, formula) -> assert false
     | FVar(var) -> assert false
     end
+
+let rec names_to_vars evalExp = match evalExp with
+    | Var (_) -> evalExp
+    | Name (cname) -> Var (cname)
+    | Constructor (cname, args) -> Constructor (cname, List.map names_to_vars args)
+    | Dot (evalExp, mem) -> Dot (names_to_vars evalExp, mem)

@@ -16,15 +16,15 @@ open Macro_expander
 open Lexing
 open DeclarationsToRules
 
+let repo_dir = "repo-subD"
+
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
 let languagesFromRepo = 
-	let dir = "repo/" in 
-	let contents = Array.to_list (Sys.readdir dir) in
-	(* let contents = List.rev_map (Filename.concat dir) contents in *)
+	let contents = Array.to_list (Sys.readdir repo_dir) in
 	let files =
 	  List.fold_left (fun (files) f ->
-	       match (stat (dir ^ f)).st_kind with
+	       match (stat (repo_dir ^ "/" ^ f)).st_kind with
 		   | S_REG -> if String.ends_with f ".lan" then files @ [f] else files (* Regular file *)
 	   	   | _ -> files)
 		   [] contents in 
@@ -45,7 +45,6 @@ let repoOfSchemas = [
     ;
     *)
 
-    (*
     (* Soundness with only declarative subtyping *)
     "./inversion-subtype.lnp"
     ;
@@ -57,8 +56,8 @@ let repoOfSchemas = [
     ;
 	"./preservation-sub.lnp"
     ;
-    *)
 
+    (*
     (* Soundness with only algorithmic subtyping *)
 	"./canonical.lnp"
 	;
@@ -80,6 +79,7 @@ let repoOfSchemas = [
     ;
     "preservation-subA.lnp"
     ;
+    *)
 
     (*
     (* Equivalence of algorithmic and declaritive subtyping *)
@@ -116,8 +116,7 @@ let repoOfSchemas = [
 
 let parseOneLanguage filename =
   (* Parse the language, lan is the parsed language *)
-  let dir = "./repo/" in 
-  let input = (open_in (dir ^ filename)) in
+  let input = (open_in (repo_dir ^ "/" ^ filename)) in
   let filebuf = Lexing.from_input input in
   let unusedVar = print_endline ("Reading the language: " ^ filename) in 
   let lan = try (ParserLan.fileLan LexerLan.token filebuf) with

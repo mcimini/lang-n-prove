@@ -2019,7 +2019,7 @@ and _menhir_goto_list_evalExp_ : _menhir_env -> 'ttv_tail -> _menhir_state -> 't
             let _1 = () in
             let _v : 'tv_formula = 
 # 243 "parser.mly"
-     ( Formula(name, predname, es) )
+     ( Formula(name, predname, List.map names_to_vars es) )
 # 2024 "parser.ml"
              in
             _menhir_goto_formula _menhir_env _menhir_stack _menhir_s _v) : 'freshtv1118)) : 'freshtv1120)

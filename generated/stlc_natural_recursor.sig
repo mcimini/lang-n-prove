@@ -13,7 +13,7 @@ type zero term.
 type ff term.
 type tt term.
 type cons term -> term -> term.
-type emptyList term.
+type emptyList term. 
 type app term -> term -> term.
 type natrec term -> term -> term -> term.
 type pred term -> term.
@@ -30,9 +30,19 @@ type value term -> o.
 
 type error term -> o.
 
-type typeOf term -> typ -> o.
 
 type step term -> term -> o.
 
 type nstep term -> term -> o.
+
+
+kind tenv type. type empty tenv.
+type consEnv term -> typ -> tenv -> tenv. 
+
+type typeOf tenv -> term -> typ -> o.
+type typeOfA tenv -> term -> typ -> o.
+type subtypeA typ -> typ -> o.
+type subtype typ -> typ -> o.
+type join typ -> typ ->  typ -> o.
+type meet typ -> typ ->  typ -> o.
 

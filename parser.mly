@@ -240,7 +240,7 @@ hypParam:
 
 formula:
 	| LPAREN name = lnp_name COLON predname = VAR es = list(evalExp) RPAREN
-    	{ Formula(name, predname, es) }  
+    	{ Formula(name, predname, List.map names_to_vars es) }  
     | FORALLSTAR COMMA f = formula
         { ForallStar(f) }
     | EXISTSTAR COMMA f = formula

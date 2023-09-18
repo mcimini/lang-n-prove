@@ -21,10 +21,9 @@ let language_prettyPrintExplicitTenv predname arguments =
 	let argsWithoutTypeEnv = List.tl arguments in 
     let arg_string hypotheticalFlag args = (String.concat " " (List.map (language_prettyPrintTerm_map_version hypotheticalFlag) args)) in
 	if term_isConstr typeEnv then
-		let plainFormula = predname ^ " " ^ arg_string true argsWithoutTypeEnv in 
-				match typeEnv with 
-					    | (Constr("gammaAddx", [t])) -> "(pi x\\ typeOf (consEnv x " ^ (language_prettyPrintTerm t true) ^ " Gamma) " ^ arg_string true argsWithoutTypeEnv ^ ")"
-						| (Constr("gammaAddX", [])) -> "(pi x\\ " ^ plainFormula ^ ")"
+            match typeEnv with 
+                    | (Constr("gammaAddx", [t])) -> "(pi x\\ typeOf (consEnv x " ^ (language_prettyPrintTerm t true) ^ " Gamma) " ^ arg_string true argsWithoutTypeEnv ^ ")"
+                    | (Constr("gammaAddX", [])) -> "(pi x\\ typeOf Gamma " ^ arg_string true argsWithoutTypeEnv ^ ")"
 		else predname ^ " " ^ arg_string false arguments
 
 let language_prettyPrintHypotheticalWrap predname arguments = 

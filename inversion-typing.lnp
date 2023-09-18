@@ -1,7 +1,7 @@
 for each v in Value, Theorem Inversion-typing-_(v):
     let srule = ofType(v).rule[<:] inn
     let trule = align v.rule[|-] to srule where out = left inn
-    forall*, (Main : typeOf (empty) trule.exp srule.right) ->
+    forall*, (Main : typeOf Gamma trule.exp srule.right) ->
         exists*, AND(P in trule.premises): (P) endAND /\ AND(P in srule.premises): (P).
 Proof.
 Subtype_(0): induction on Main.

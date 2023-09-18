@@ -6,7 +6,7 @@ kind tenv type.
 
 kind label type.
 
-type empty tenv. 
+kind tenv type. type empty tenv.
 type consEnv term -> typ -> tenv -> tenv. 
 
 
@@ -25,7 +25,7 @@ type pair term -> term -> term.
 type inr term -> term.
 type inl term -> term.
 type cons term -> term -> term.
-type emptyList term.
+type emptyList term. 
 type absT (typ -> term) -> term.
 type app term -> term -> term.
 type pred term -> term.
@@ -49,7 +49,21 @@ type step term -> term -> o.
 
 type nstep term -> term -> o.
 
-type typeOf tenv -> term -> typ -> o.
+kind tenv type. type empty tenv.
+type consEnv term -> typ -> tenv -> tenv. 
+
 type subtypeA typ -> typ -> o.
+type subtype typ -> typ -> o.
 type join typ -> typ ->  typ -> o.
 type meet typ -> typ ->  typ -> o.
+
+kind tenv type. type empty tenv.
+type consEnv term -> typ -> tenv -> tenv. 
+
+type typeOf tenv -> term -> typ -> o.
+type typeOfA tenv -> term -> typ -> o.
+type subtypeA typ -> typ -> o.
+type subtype typ -> typ -> o.
+type join typ -> typ ->  typ -> o.
+type meet typ -> typ ->  typ -> o.
+

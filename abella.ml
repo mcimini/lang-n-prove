@@ -24,7 +24,7 @@ let rec abella_evalExp t = match t with
 	| InList(t1, t2) -> "UNRECOGNIZED"
 
 let rec abella_evalExp_noBinding t = match t with 
-	| Constructor(cname, ts) -> if cname = "expBinding" then
+	| Constructor(cname, ts) -> if cname = "expBinding" || cname = "typeBinding" then
                         abella_evalExp_noBinding (List.hd ts)
                 else
                         "(" ^ cname ^ if ts = [] then ")" else " " ^ (String.concat " " (List.map abella_evalExp_noBinding ts)) ^ ")"
@@ -42,13 +42,20 @@ let rec abella_formula formula = match formula with
 	| Formula(lnp_name, predname, ts) -> begin
         match predname with
         | "typeOf" -> begin
-            let gamma = if explicit_tenv then " " ^ abella_evalExp (List.nth ts 0) else "" in
-            match List.hd ts with
-            | (Constructor("gammaAddx", [e])) -> "(nabla (x: term), {typeOf x " ^ (abella_evalExp e) ^ " => " ^
-                predname ^ gamma ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " x) " ^ (abella_evalExp (List.nth ts 2)) ^ "})"
-            | (Constructor("gammaAddX", _)) -> "(nabla (X: typ), {" ^
-                predname ^ gamma ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " X) (" ^ (abella_evalExp (List.nth ts 2)) ^ " X)})"
-            | _ -> "{" ^ predname ^ gamma ^ " " ^ (String.concat " " (List.map abella_evalExp_noBinding (List.tl ts))) ^ "}"
+            if explicit_tenv then
+                let gamma = abella_evalExp (List.nth ts 0) in
+                match List.hd ts with
+                | (Constructor("gammaAddx", [e])) -> "(nabla x, { " ^ predname ^ " (consEnv x " ^ abella_evalExp e ^ " Gamma) (" ^ (abella_evalExp (List.nth ts 1)) ^ " x) " ^ (abella_evalExp (List.nth ts 2)) ^ "})"
+                | (Constructor("gammaAddX", _)) -> "(nabla (X: typ), {" ^
+                    predname ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " X) (" ^ (abella_evalExp (List.nth ts 2)) ^ " X)})"
+                | _ -> "{" ^ predname ^ " " ^ gamma ^ " " ^ (String.concat " " (List.map abella_evalExp_noBinding (List.tl ts))) ^ "}"
+            else
+                match List.hd ts with
+                | (Constructor("gammaAddx", [e])) -> "(nabla (x: term), {typeOf x " ^ (abella_evalExp e) ^ " => " ^
+                    predname ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " x) " ^ (abella_evalExp (List.nth ts 2)) ^ "})"
+                | (Constructor("gammaAddX", _)) -> "(nabla (X: typ), {" ^
+                    predname ^ " (" ^ (abella_evalExp (List.nth ts 1)) ^ " X) (" ^ (abella_evalExp (List.nth ts 2)) ^ " X)})"
+                | _ -> "{" ^ predname ^ " " ^ (String.concat " " (List.map abella_evalExp_noBinding (List.tl ts))) ^ "}"
         end
         | "subtype" when List.length ts = 3 ->
             "(nabla (X: typ), {subtype (" ^
