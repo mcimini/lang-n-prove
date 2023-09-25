@@ -65,26 +65,33 @@ let language_prettyPrintRules lan =
 	let allTypingRules = language_getTypingRules lan in
 	let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
     *)
-    let builtinPrednames = ["typeOf"; "step"; "subtype"; "value"; "error"] in
-	let expressionCNAMES = List.map term_getCNAME (language_grammarLookupByCategory lan "Expression") in 
-	(* print typing rules as they appear in Expression *)
-		(*String.concat "\n" (List.map (fun e -> language_prettyPrintRule (List.assoc e mapOpToTypingRule)) expressionCNAMES)*)
-		String.concat "\n" (expressionCNAMES |> List.map
-            (fun cname -> language_prettyPrintRule begin
-                let filtered = 
+    let builtinPrednames = ["typeOf"; "step"; "subtype"; "subtypeA"; "join"; "meet"; "value"; "error"] in
+	(* print predname rules as they appear in Expression *)
+    let only_predname_rules predname =
+        let expressionCNAMES = List.map term_getCNAME (language_grammarLookupByCategory lan "Expression") in
+		(expressionCNAMES |> List.filter_map
+            (fun cname ->
+                let filtered =
                     (language_getRulesOfOp lan cname) |>
-                    List.filter (rule_isPredname "typeOf")
-                in List.hd filtered
-            end))
-		^ let allReductionRules = language_getReductionRules lan in
-		String.concat "\n" (List.map language_prettyPrintRule allReductionRules)
-		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Value"))
-		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Error"))
-		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Context"))
-		^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "ErrorContext"))
-		^ String.concat "\n" (List.map language_prettyPrintRule (language_subtypeDeclarationsAsRules lan))
-		^ String.concat "\n" (List.map language_prettyPrintRule
-            (List.filter (fun r -> not (List.mem (rule_getConclusionPredname r) builtinPrednames)) (language_getRules lan)))
+                    List.filter (rule_isPredname predname)
+                in match filtered with
+                | [] -> None
+                | hd :: _ -> Some hd
+            ))
+    in
+    String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOf"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOfA"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "subtypeA"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "join"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "meet"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_getReductionRules lan))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Value"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Error"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Context"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "ErrorContext"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (language_subtypeDeclarationsAsRules lan))
+    ^ String.concat "\n" (List.map language_prettyPrintRule
+        (List.filter (fun r -> not (List.mem (rule_getConclusionPredname r) builtinPrednames)) (language_getRules lan)))
 
 let language_prettyPrintExpressions_in_TypingRules_order lan = 
 	let allTypingRules = language_getTypingRules lan in
