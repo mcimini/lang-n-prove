@@ -107,6 +107,11 @@ rule token = parse
   | "with"      { WITH }
   | "targetOfElimForm" { TARGETOFELIMFORM }
   | "targetOfErrorHandler" { TARGETOFERRORHANDLER }
+  | "hasEnvType"    { HASENVTYPE }
+  | "envType"       { ENVTYPE }
+  | "findSucceeds"  { FINDSUCCEEDS }
+  | "range"         { RANGE }
+  | "arity"         { ARITY }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | name             { NAME (Lexing.lexeme lexbuf) }
   | ['0'-'9']+ as i { INT (int_of_string i) }  

@@ -16,7 +16,7 @@ open Macro_expander
 open Lexing
 open DeclarationsToRules
 
-let repo_dir = "repo-subD"
+let repo_dir = "repo-subDA"
 
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
@@ -45,6 +45,7 @@ let repoOfSchemas = [
     ;
     *)
 
+    (*
     (* Soundness with only declarative subtyping *)
     "./inversion-subtype.lnp"
     ;
@@ -55,6 +56,39 @@ let repoOfSchemas = [
     "./error-types-all-sub.lnp"
     ;
 	"./preservation-sub.lnp"
+    ;
+    *)
+
+    (* Equivalence of algorithmic and declaritive subtyping *)
+    "subtyping-in-env.lnp"
+    ;
+    "./inversion-subtype.lnp"
+    ;
+    "subtyping-soundness.lnp"
+    ;
+    "join-and-meet-implies-subtyping.lnp"
+    ;
+    "join-implies-subtyping.lnp"
+    ;
+    "typing-soundness.lnp"
+    ;
+    "subtypingA-transitivity-double.lnp"
+    ;
+    "subtypingA-transitivity.lnp"
+    ;
+    "subtypingA-reflexivity.lnp"
+    ;
+    "subtyping-complete.lnp"
+    ;
+    "inversion-subtypeA.lnp"
+    ;
+    "existence-of-join-and-meet.lnp"
+    ;
+    "existence-of-join.lnp"
+    ;
+    "subtyping-transitivity.lnp"
+    ;
+    "typing-complete.lnp"
     ;
 
     (*
@@ -81,43 +115,13 @@ let repoOfSchemas = [
     ;
     *)
 
-    (*
-    (* Equivalence of algorithmic and declaritive subtyping *)
-    "./inversion-subtype.lnp"
-    ;
-    "subtyping-soundness.lnp"
-    ;
-    "join-and-meet-implies-subtyping.lnp"
-    ;
-    "join-implies-subtyping.lnp"
-    ;
-    "typing-soundness.lnp"
-    ;
-    "subtypingA-transitivity-double.lnp"
-    ;
-    "subtypingA-transitivity.lnp"
-    ;
-    "subtypingA-reflexivity.lnp"
-    ;
-    "subtyping-complete.lnp"
-    ;
-    "inversion-subtypeA.lnp"
-    ;
-    "existence-of-join-and-meet.lnp"
-    ;
-    "existence-of-join.lnp"
-    ;
-    "typing-complete.lnp"
-    ;
-    *)
-
     ]
 ;;
 
 let parseOneLanguage filename =
   (* Parse the language, lan is the parsed language *)
   let input = (open_in (repo_dir ^ "/" ^ filename)) in
-  let filebuf = Lexing.from_input input in
+  let filebuf = Lexing.from_channel input in
   let unusedVar = print_endline ("Reading the language: " ^ filename) in 
   let lan = try (ParserLan.fileLan LexerLan.token filebuf) with
 						    | LexerLan.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
@@ -128,7 +132,7 @@ let parseOneLanguage filename =
 let parseTheSchema filename = 
    (* Parse the theorem&proof schema, schema is the var of the parsed schema *)
    let inputSchema = (open_in filename) in
-   let filebuf = Lexing.from_input inputSchema in
+   let filebuf = Lexing.from_channel inputSchema in
    let schema = try (Parser.file Lexer.token filebuf) with
  						    | Lexer.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
  						    | Parser.Error -> raise(Failure(filename ^ ": Parser error: " ^ get_positions filebuf)) in

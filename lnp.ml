@@ -54,6 +54,11 @@ and evaluatedExpression =
   | VarsOf of evaluatedExpression
   | TargetOfElimForm of evaluatedExpression * evaluatedExpression
   | TargetOfErrorHandler of evaluatedExpression * evaluatedExpression
+  | HasEnvType of evaluatedExpression
+  | EnvType of evaluatedExpression
+  | FindSucceeds of evaluatedExpression * evaluatedExpression
+  | Range of evaluatedExpression
+  | Arity of evaluatedExpression
   
 type formula =
   | Top
@@ -233,8 +238,36 @@ let rec formula_free_vars (formula: formula): var list =
     | FVar(var) -> assert false
     end
 
+(* Add more cases as needed *)
 let rec names_to_vars evalExp = match evalExp with
     | Var (_) -> evalExp
     | Name (cname) -> Var (cname)
     | Constructor (cname, args) -> Constructor (cname, List.map names_to_vars args)
     | Dot (evalExp, mem) -> Dot (names_to_vars evalExp, mem)
+    | GetArgs (t1, t2) -> GetArgs (names_to_vars t1, names_to_vars t2)
+
+let rec formulaEnvType evalExp =
+    match evalExp with
+    | Premise (_, formula) -> formulaEnvType (Formula formula)
+    | (Formula (Language.Formula(predname, env :: _)): evaluatedExpression)
+        when (predname = "typeOf") || (predname = "typeOfA") -> begin
+            match env with
+            | Constr ("gammaAddx", [typ]) -> Some typ
+            | _ -> None
+    end
+
+let formulaFind (var: string) (premises: Language.formula list): (evaluatedExpression list) option =
+    let rec find (var: string) (term: evaluatedExpression) (coords: evaluatedExpression list): evaluatedExpression list option =
+        match term with
+        | Var v when v = var -> Some (coords)
+        | Var _ | Constructor(_, []) -> None
+        | Constructor(_, args) -> begin
+            let results = args |> List.mapi (fun i arg -> find var arg (coords @ [Num i])) in
+            match List.find_opt Option.is_some results with
+            | None -> None
+            | Some (Some c)-> Some c
+        end
+    in
+    let prems = premises |> List.map (fun prem -> formula_getArguments prem |> List.last |> langConstructor_to_LNPConstructor) in
+    let top = Constructor ("c", prems) in
+    find var top []

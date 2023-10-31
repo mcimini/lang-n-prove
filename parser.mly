@@ -93,6 +93,11 @@
 %token WITH
 %token TARGETOFELIMFORM
 %token TARGETOFERRORHANDLER
+%token HASENVTYPE
+%token ENVTYPE
+%token FINDSUCCEEDS
+%token RANGE
+%token ARITY
 
 %left IMPLYMACRO
 
@@ -203,6 +208,16 @@ evalExp:
       { OrTerm(t1,t2) }
   | t1 = evalExp ANDTERM t2 = evalExp 
       { AndTerm(t1,t2) }
+  | HASENVTYPE LPAREN e = evalExp RPAREN
+      { HasEnvType(e) }
+  | ENVTYPE LPAREN e = evalExp RPAREN
+      { EnvType(e) }
+  | FINDSUCCEEDS LPAREN t1 = evalExp COMMA t2 = evalExp RPAREN
+      { FindSucceeds(t1, t2) }
+  | RANGE LPAREN t1 = evalExp RPAREN
+      { Range(t1) }
+  | ARITY LPAREN t1 = evalExp RPAREN
+      { Arity(t1) }
 
 relation:
     | TURNSTYLE

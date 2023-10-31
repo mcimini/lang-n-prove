@@ -3,12 +3,44 @@ Proof.
 (Prem _): induction on Main.
 for each e in Expression:
     for each p in e.rule[|a-].premises[|a-]:
-        (Derived p _): apply IH0 to (Prem p).
-        if isVar(p.out) then
-            (SubtypeA p _): apply Subtyping-complete to (Derived p 1)
+        (Ih p _): apply IH0 to (Prem p).
+        if hasEnvType(p) then
+            if findSucceeds(envType(p), e.rule[|a-].premises[|a-]) then
+                (Subtype-in-env p _): apply Subtyping-in-env to (Ih p 0) (SubtypeA <= find envType(p) in e.rule[|a-].premises[|a-]).
+                (Derived p 0): apply (Subtype-in-env p 0) to.
+                (Derived p 1): apply Subtype-transitive to (Subtype-in-env p 1) (Ih p 1)
+            else
+                (Derived p 0): apply (Ih p 0) to.
+                (Derived p 1): apply (Ih p 1) to
+            endif
         else
-            (SubtypeA p _): apply Inversion-subtypeA-_(p.out) to (Derived p 1).
-            _: apply Inversion-subtype-_(p.out) to (Derived p 1)
+            (Derived p 0): apply (Ih p 0) to.
+            (Derived p 1): apply (Ih p 1) to
+        endif.
+        (SubtypeA p): apply Subtyping-complete to (Derived p 1).
+        if isVar(p.out) then noOp else
+            (Subtype p _): apply Inversion-subtype-_(p.out) to (Derived p 1).
+            (SubtypeA p _): apply Inversion-subtypeA-_(p.out) to (SubtypeA p).
+            for each i in range(arity(p.out)):
+                if isVar(getArgs(p.out, i)) then noOp else
+                    if covariant(i, p.out) then
+                        (Subtype p i _): apply Inversion-subtype-_(getArgs(p.out, i)) to (Subtype p i).
+                        (SubtypeA p i _): apply Inversion-subtypeA-_(getArgs(p.out, i)) to (SubtypeA p i)
+                    else
+                        (SubtypeA p i _): case (SubtypeA p i)
+                    endif.
+                    for each j in range(arity(getArgs(p.out, i))):
+                        if isVar(getArgs(getArgs(p.out, i), j)) then noOp else
+                            if covariant(j, getArgs(p.out, i)) then
+                                (Subtype p i j _): apply Inversion-subtype-_(getArgs(getArgs(p.out, i), j)) to (Subtype p i j).
+                                (SubtypeA p i j _): apply Inversion-subtypeA-_(getArgs(getArgs(p.out, i), j)) to (SubtypeA p i j)
+                            else
+                                (SubtypeA p i j _): case (SubtypeA p i j)
+                            endif
+                        endif
+                    endfor
+                endif
+            endfor
         endif
     endfor.
     for each p in e.rule[|a-].premises[<a]:

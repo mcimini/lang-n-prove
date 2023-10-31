@@ -22,8 +22,8 @@ let language_prettyPrintExplicitTenv predname arguments =
     let arg_string hypotheticalFlag args = (String.concat " " (List.map (language_prettyPrintTerm_map_version hypotheticalFlag) args)) in
 	if term_isConstr typeEnv then
             match typeEnv with 
-                    | (Constr("gammaAddx", [t])) -> "(pi x\\ typeOf (consEnv x " ^ (language_prettyPrintTerm t true) ^ " Gamma) " ^ arg_string true argsWithoutTypeEnv ^ ")"
-                    | (Constr("gammaAddX", [])) -> "(pi x\\ typeOf Gamma " ^ arg_string true argsWithoutTypeEnv ^ ")"
+                    | (Constr("gammaAddx", [t])) -> "(pi x\\ " ^ predname ^ " (consEnv x " ^ (language_prettyPrintTerm t true) ^ " Gamma) " ^ arg_string true argsWithoutTypeEnv ^ ")"
+                    | (Constr("gammaAddX", [])) -> "(pi x\\ " ^ predname ^ " Gamma " ^ arg_string true argsWithoutTypeEnv ^ ")"
 		else predname ^ " " ^ arg_string false arguments
 
 let language_prettyPrintHypotheticalWrap predname arguments = 
@@ -40,7 +40,7 @@ let language_prettyPrintFormula formula =
 	let predname = formula_getPredname formula in 
 	let arguments = formula_getArguments formula in 
     match predname with
-    | "typeOf" -> if explicit_tenv then language_prettyPrintExplicitTenv predname arguments else language_prettyPrintHypotheticalWrap predname arguments
+    | "typeOf" | "typeOfA" -> if explicit_tenv then language_prettyPrintExplicitTenv predname arguments else language_prettyPrintHypotheticalWrap predname arguments
     | "subtype" when List.length arguments = 3 ->
             "(pi X\\ subtype (" ^
             language_prettyPrintTerm (List.nth arguments 0) false ^ " X) (" ^
@@ -65,11 +65,11 @@ let language_prettyPrintRules lan =
 	let allTypingRules = language_getTypingRules lan in
 	let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
     *)
-    let builtinPrednames = ["typeOf"; "step"; "subtype"; "subtypeA"; "join"; "meet"; "value"; "error"] in
-	(* print predname rules as they appear in Expression *)
-    let only_predname_rules predname =
-        let expressionCNAMES = List.map term_getCNAME (language_grammarLookupByCategory lan "Expression") in
-		(expressionCNAMES |> List.filter_map
+    let builtinPrednames = ["typeOf"; "typeOfA"; "step"; "subtype"; "subtypeA"; "join"; "meet"; "value"; "error"] in
+	(* print predname rules as they appear in the grammar line *)
+    let only_predname_rules predname category =
+        let cnames = List.map term_getCNAME (language_grammarLookupByCategory lan category) in
+		(cnames |> List.filter_map
             (fun cname ->
                 let filtered =
                     (language_getRulesOfOp lan cname) |>
@@ -79,11 +79,11 @@ let language_prettyPrintRules lan =
                 | hd :: _ -> Some hd
             ))
     in
-    String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOf"))
-    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOfA"))
-    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "subtypeA"))
-    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "join"))
-    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "meet"))
+    String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOf" "Expression"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOfA" "Expression"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "subtypeA" "Type"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "join" "Type"))
+    ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "meet" "Type"))
     ^ String.concat "\n" (List.map language_prettyPrintRule (language_getReductionRules lan))
     ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Value"))
     ^ String.concat "\n" (List.map language_prettyPrintRule (language_declarationsAsRules lan "Error"))

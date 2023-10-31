@@ -51,6 +51,13 @@ let rec substitution_evaluatedExpression evaluatedExpression var term = match ev
     substitution_evaluatedExpression t2 var term)
 | TargetOfErrorHandler(t1, t2) -> TargetOfErrorHandler(substitution_evaluatedExpression t1 var term,
     substitution_evaluatedExpression t2 var term)
+| HasEnvType (t1) -> HasEnvType (substitution_evaluatedExpression t1 var term)
+| EnvType (t1) -> EnvType (substitution_evaluatedExpression t1 var term)
+| FindSucceeds(t1, t2) -> FindSucceeds(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t2 var term)
+| Range (t1) -> Range (substitution_evaluatedExpression t1 var term)
+| Arity (t1) -> Arity (substitution_evaluatedExpression t1 var term)
+| Premise(_, _) -> evaluatedExpression
 and substitution_evaluatedExpression_mapversion var term evaluatedExpression = substitution_evaluatedExpression evaluatedExpression var term
 
 let substitution_lnp_name lnp_name var term = match lnp_name with 

@@ -1,0 +1,11 @@
+*.cmo
+*.cmi
+/lnp
+/generated/*.mod
+/generated/*.thm
+/lexer.ml
+/parser.ml
+/parser.mli
+/lexerLan.ml
+/parserLan.ml
+/parserLan.mli

@@ -1,0 +1,4 @@
+Theorem Subtype-transitive:
+ forall*, (Main1: subtype t1 t2) -> (Main2: subtype t2 t3) -> (_: subtype t1 t3).
+Proof.
+intros. search

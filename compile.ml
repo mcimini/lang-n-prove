@@ -100,23 +100,17 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
         let ty_constr = List.find (fun (Constr(cname, _)) -> cname = ty) subtyping in
         let LangVar(variance) = List.nth (term_getArguments ty_constr) i in
         Boolean (String.starts_with variance "Cov" || String.starts_with variance "AbsCov")
-    | FindVarInPremises(t1, t2) ->
+    | FindVarInPremises(t1, t2) -> begin
         let var = List.hd (term_getVars (eval_getTerm (eval lan t1))) in
         let premises = List.map (fun (Premise(i, p)) -> p) (eval_getListOfTerms (eval lan t2)) in
-        let rec find_outer prems i =
-            match prems with
-            | [] -> raise (Failure(var ^ " not found."))
-            | prem :: rest_prems ->
-                let rec find_inner vars j =
-                    match vars with
-                    | [] -> find_outer rest_prems (i + 1)
-                    | first :: _ when first = var -> ListOfTerms([Num(i); Num(j)])
-                    | _ :: rest_vars -> find_inner rest_vars (j + 1)
-                in
-                let vars = (formula_getArguments prem) |> List.last |>
-                    langConstructor_to_LNPConstructor |> term_getVars
-                in find_inner vars 0
-        in find_outer premises 0
+        match (formulaFind var premises) with
+        | Some(lst) -> ListOfTerms(lst)
+        | None -> raise (Failure (var ^ " not found"))
+    end
+    | FindSucceeds(t1, t2) ->
+        let var = List.hd (term_getVars (eval_getTerm (eval lan t1))) in
+        let premises = List.map (fun (Premise(i, p)) -> p) (eval_getListOfTerms (eval lan t2)) in
+        Boolean(Option.is_some (formulaFind var premises))
     | VarsOf(t1) ->
         let e = eval_getTerm (eval lan t1) in
         ListOfTerms (List.map (fun v -> Var v) (term_getVars e))
@@ -124,6 +118,19 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
         let elim = (term_getConstructorName (eval_getTerm (eval lan t1))) in
         let value = (term_getConstructorName (eval_getTerm (eval lan t2))) in
         Term (langConstructor_to_LNPConstructor (tmp_name_fix lan elim value))
+    | HasEnvType(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        Boolean (is_some (formulaEnvType e))
+    | EnvType(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        Term (langConstructor_to_LNPConstructor (Option.get (formulaEnvType e)))
+    | Range(t1) ->
+        let Num n = eval_getTerm (eval lan t1) in
+        ListOfTerms (List.init n (fun i -> Num i))
+    | Arity(t1) ->
+        let Constructor (_, args) = eval_getTerm (eval lan t1) in
+        Term (Num (List.length args))
+    | Premise _ -> Term (evaluatedExpression)
 
 let hypParamAsStr arg = match arg with
     | Var("_") -> "0"

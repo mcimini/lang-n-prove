@@ -1,0 +1,88 @@
+Subtyping S ::= (list Cov)
+Expression E ::= x | (emptyList ) | (cons E E) | (head E) | (tail E) | (myError )
+Type T ::= (list T)
+Value V ::= (emptyList ) | (cons V1 V2)
+Error ::= (myError )
+Context C ::= [] | (cons C e) | (cons v C) | (head C) | (tail C)
+
+Gamma |- (emptyList ) : (list T).
+
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+
+(head (emptyList )) --> (myError ).
+
+(head (cons E1 E2)) --> E1.
+
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+
+(tail (emptyList )) --> (myError ).
+
+(tail (cons E1 E2)) --> E2.
+
+Gamma |- (myError ) : T.
+
+
+Gamma |a- (emptyList ) : (list T).
+Gamma |a- (cons E1 E2) : (list T3) <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (list T2) /\ join T1 T2 T3.
+Gamma |a- (head E) : T <== Gamma |a- E : (list T).
+Gamma |a- (tail E) : (list T) <== Gamma |a- E : (list T).
+Gamma |a- (myError ) : T.
+(bool) <a (bool).
+
+(int) <a (int).
+
+(unitType) <a (unitType).
+
+(list T1) <a (list T1') <== T1 <a T1'.
+
+(option T1) <a (option T1' T2') <== T1 <a T1'.
+
+(arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
+
+(times T1 T2) <a (times T1' T2') <== T1 <a T1' /\ T2 <a T2'.
+
+(sum T1 T2) <a (sum T1' T2') <== T1 <a T1' /\ T2 <a T2'.
+
+(times5 T1 T2 T3 T4 T5) <a (times T1' T2' T3' T4' T5') <== T1 <a T1' /\ T2 <a T2' /\ T3 <a T3' /\ T4 <a T4' /\ T5 <a T5'.
+
+join (bool) (bool) (bool).
+
+join (int) (int) (int). 
+
+join (unitType) (unitType) (unitType).
+
+join (list T1) (list T3) (list T5) <== join T1 T3 T5.
+
+join (option T1) (option T3) (option T5) <== join T1 T3 T5.
+
+join (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== meet T1 T3 T5 /\ join T2 T4 T6.
+
+join (times T1 T2) (times T3 T4) (times T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
+
+join (sum T1 T2) (sum T3 T4) (sum T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
+
+join (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== join T11 T21 T31 /\ join T12 T22 T32  /\ join T13 T23 T33  /\ join T14 T24 T34  /\ join T15 T25 T35.
+
+meet (bool) (bool) (bool).
+
+meet (int) (int) (int). 
+
+meet (unitType) (unitType) (unitType).
+
+meet (list T1) (list T3) (list T5) <== meet T1 T3 T5.
+
+meet (option T1) (option T3) (option T5) <== meet T1 T3 T5.
+
+meet (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== join T1 T3 T5 /\ meet T2 T4 T6.
+
+meet (times T1 T2) (times T3 T4) (times T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
+
+meet (sum T1 T2) (sum T3 T4) (sum T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
+
+meet (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== meet T11 T21 T31 /\ meet T12 T22 T32  /\ meet T13 T23 T33  /\ meet T14 T24 T34  /\ meet T15 T25 T35.
+
+(excType ) <a (excType ).
+join (excType) (excType) (excType).
+meet (excType) (excType) (excType).
