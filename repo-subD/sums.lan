@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (sum Cov Cov) 
 Expression E ::= x | (inl E) | (inr E) | (case E (x)E (x)E)
-Type T ::= (sum T T)
+Type T ::= (top) | (sum T T)
 Value V ::= (inl V1) | (inr V1)
 Error ::= 
 Context C ::= [] | (inl C) | (inr C) | (case C e e)

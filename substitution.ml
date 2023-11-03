@@ -57,6 +57,8 @@ let rec substitution_evaluatedExpression evaluatedExpression var term = match ev
     substitution_evaluatedExpression t2 var term)
 | Range (t1) -> Range (substitution_evaluatedExpression t1 var term)
 | Arity (t1) -> Arity (substitution_evaluatedExpression t1 var term)
+| ListDifference(t1, t2) -> ListDifference(substitution_evaluatedExpression t1 var term,
+    substitution_evaluatedExpression t1 var term)
 | Premise(_, _) -> evaluatedExpression
 and substitution_evaluatedExpression_mapversion var term evaluatedExpression = substitution_evaluatedExpression evaluatedExpression var term
 

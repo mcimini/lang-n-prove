@@ -98,6 +98,7 @@
 %token FINDSUCCEEDS
 %token RANGE
 %token ARITY
+%token MINUS
 
 %left IMPLYMACRO
 
@@ -218,6 +219,8 @@ evalExp:
       { Range(t1) }
   | ARITY LPAREN t1 = evalExp RPAREN
       { Arity(t1) }
+  | t1 = evalExp MINUS t2 = evalExp
+      { ListDifference(t1, t2) }
 
 relation:
     | TURNSTYLE

@@ -59,7 +59,8 @@ and evaluatedExpression =
   | FindSucceeds of evaluatedExpression * evaluatedExpression
   | Range of evaluatedExpression
   | Arity of evaluatedExpression
-  
+  | ListDifference of evaluatedExpression * evaluatedExpression
+
 type formula =
   | Top
   | Bottom

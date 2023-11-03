@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (unitType) 
 Expression E ::= x | (unit )
-Type T ::= (unitType )
+Type T ::= (top) | (unitType )
 Value V ::= (unit )
 Error ::= 
 Context C ::= [] | 

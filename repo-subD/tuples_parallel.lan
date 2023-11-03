@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (times5 Cov Cov Cov Cov Cov) 
 Expression E ::= x | (tuple5 E E E E E) | (select1 E) | (select2 E) | (select3 E) | (select4 E) | (select5 E)
-Type T ::= (times5 T T T T T)
+Type T ::= (top) | (times5 T T T T T)
 Value V ::= (tuple5 V1 V2 V3 V4 V5)
 Error ::= 
 Context C ::= [] | (tuple5 C e e e e) | (tuple5 e C e e e) | (tuple5 e e C e e) | (tuple5 e e e C e) | (tuple5 e e e e C) | (select1 C) | (select2 C) | (select3 C) | (select4 C) | (select5 C)

@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (arrow Contra Cov) | (times Cov Cov) 
 Expression E ::= x | (abs T (x)E) | (pair E E) | (app E E) | (fst E) | (snd E)
-Type T ::= (arrow T T) | (times T T)
+Type T ::= (top) | (arrow T T) | (times T T)
 Value V ::= (abs T1 R2) | (pair E1 V2)
 Error ::= 
 Context C ::= [] | (pair e C) | (app C e) | (app e C) | (fst C) | (snd C)

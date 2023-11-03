@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (list Cov) | (bool )
 Expression E ::= x | (emptyList ) | (cons E E) | (tt ) | (ff ) | (head E) | (tail E) | (isnil E) | (if E E E) | (myError )
-Type T ::= (list T) | (bool )
+Type T ::= (top) | (list T) | (bool )
 Value V ::= (emptyList ) | (cons V1 V2) | (tt ) | (ff )
 Error ::= (myError )
 Context C ::= [] | (cons C e) | (cons v C) | (head C) | (tail C) | (isnil C) | (if C e e)

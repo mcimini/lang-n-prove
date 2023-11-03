@@ -61,23 +61,22 @@ let language_prettyPrintRule rule =
   *)
 
 let language_prettyPrintRules lan = 
-	(* create a map: op -> its typing rule:
-	let allTypingRules = language_getTypingRules lan in
-	let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
+    (* create a map: op -> its typing rule:
+    let allTypingRules = language_getTypingRules lan in
+    let mapOpToTypingRule = List.map (fun rule -> (term_getCNAME (rule_getInputOfConclusion rule), rule)) allTypingRules in 
     *)
     let builtinPrednames = ["typeOf"; "typeOfA"; "step"; "subtype"; "subtypeA"; "join"; "meet"; "value"; "error"] in
-	(* print predname rules as they appear in the grammar line *)
+    (* print predname rules as they appear in the grammar line *)
     let only_predname_rules predname category =
         let cnames = List.map term_getCNAME (language_grammarLookupByCategory lan category) in
-		(cnames |> List.filter_map
+        (cnames |> List.map
             (fun cname ->
                 let filtered =
                     (language_getRulesOfOp lan cname) |>
                     List.filter (rule_isPredname predname)
-                in match filtered with
-                | [] -> None
-                | hd :: _ -> Some hd
+                in filtered
             ))
+        |> List.concat
     in
     String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOf" "Expression"))
     ^ String.concat "\n" (List.map language_prettyPrintRule (only_predname_rules "typeOfA" "Expression"))

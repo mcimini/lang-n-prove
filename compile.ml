@@ -57,10 +57,7 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
     | Dot(t, Relation(pred)) ->
         let name = term_getConstructorName (eval_getTerm (eval lan t)) in
         let rules = List.filter (rule_isPredname pred) (language_getRulesOfOp lan name) in
-        if (List.length rules) = 1 then
-            Term (Rule (List.hd rules))
-        else
-            raise (Failure("Expected exactly one " ^ pred ^ " rule for constructor " ^ name ^ "."))
+        Term (Rule (List.hd rules))
     | Dot(Rule r, Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments (rule_getConclusion r)) n))
     | Dot(Rule r, Premises(None)) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
     | Dot(Premise(i, p), Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments p) n))
@@ -130,6 +127,10 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
     | Arity(t1) ->
         let Constructor (_, args) = eval_getTerm (eval lan t1) in
         Term (Num (List.length args))
+    | ListDifference(t1, t2) ->
+        let left = eval_getListOfTerms (eval lan t1) in
+        let right = eval_getListOfTerms (eval lan t2) in
+        ListOfTerms (list_difference left right)
     | Premise _ -> Term (evaluatedExpression)
 
 let hypParamAsStr arg = match arg with

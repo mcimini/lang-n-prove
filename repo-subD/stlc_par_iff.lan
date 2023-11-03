@@ -1,6 +1,7 @@
+Top ::= (top)
 Subtyping S ::= (arrow Contra Cov) | (bool) 
 Expression E ::= x | (abs T (x)E) | (tt ) | (ff ) | (app E E) | (if E E E)
-Type T ::= (arrow T T) | (bool )
+Type T ::= (top) | (arrow T T) | (bool )
 Value V ::= (abs T1 R2) | (tt ) | (ff )
 Error ::= 
 Context C ::= [] | (app C e) | (app e C) | (if C e e)

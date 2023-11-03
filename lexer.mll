@@ -112,6 +112,7 @@ rule token = parse
   | "findSucceeds"  { FINDSUCCEEDS }
   | "range"         { RANGE }
   | "arity"         { ARITY }
+  | "-"             { MINUS }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | name             { NAME (Lexing.lexeme lexbuf) }
   | ['0'-'9']+ as i { INT (int_of_string i) }  

@@ -1,5 +1,5 @@
-for each ty in Type, Theorem Canonical-form-_(ty) : 
-	forall e, forallVars(ty), (Main : typeOf (empty) e ty) -> (ValHyp : value e) 
+for each ty in Type - Top, Theorem Canonical-form-_(ty) :
+	forall e, forallVars(ty), (Main : typeOf (empty) e ty) -> (ValHyp : value e)
 		-> OR(v in valuesOf(ty)): existsVars(v), (e = v) /\ AND(arg in valueArgs(v)): (_ : value arg).
 Proof. 
 Typing_(0): induction on Main.

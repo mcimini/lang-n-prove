@@ -16,7 +16,7 @@ open Macro_expander
 open Lexing
 open DeclarationsToRules
 
-let repo_dir = "repo-subDA"
+let repo_dir = "repo-subD"
 
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
@@ -37,18 +37,23 @@ let repoOfSchemas = [
 	;
 	"./progress-op.lnp"
 	;
-	"./progress.lnp" 
+	"./progress.lnp"
 	;
     "./error-types-all.lnp"
     ;
-	"./preservation.lnp" 
+	"./preservation.lnp"
     ;
     *)
 
-    (*
     (* Soundness with only declarative subtyping *)
     "./inversion-subtype.lnp"
     ;
+	"./canonical-sub.lnp"
+	;
+	"./progress-op-sub.lnp"
+	;
+	"./progress-sub.lnp"
+	;
     "./inversion-typing.lnp"
     ;
     "./inversion-error.lnp"
@@ -57,8 +62,8 @@ let repoOfSchemas = [
     ;
 	"./preservation-sub.lnp"
     ;
-    *)
 
+    (*
     (* Equivalence of algorithmic and declaritive subtyping *)
     "subtyping-in-env.lnp"
     ;
@@ -90,6 +95,7 @@ let repoOfSchemas = [
     ;
     "typing-complete.lnp"
     ;
+    *)
 
     (*
     (* Soundness with only algorithmic subtyping *)

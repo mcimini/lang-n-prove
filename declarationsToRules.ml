@@ -64,5 +64,7 @@ let language_subtypeDeclarationsAsRules (lan: language): rule list =
             Formula("subtype", [LangVar("T1"); LangVar("T3")])) in
         let reflexivity_rule = Rule([], Formula("subtype", [LangVar("T"); LangVar("T")])) in
         let specific_rules = List.map language_termToSubtypeRule grammarItems in
-        specific_rules @ [subsumption_rule; reflexivity_rule; transitivity_rule]
+        (* Later, we want to generate the top rule from the Top grammar line, instead of always "top". *)
+        let top_rule = Rule([], Formula("subtype", [LangVar("T"); Constr("top", [])])) in
+        top_rule :: specific_rules @ [subsumption_rule; reflexivity_rule; transitivity_rule]
     else []

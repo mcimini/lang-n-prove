@@ -58,3 +58,4 @@ type join typ -> typ ->  typ -> o.
 type meet typ -> typ ->  typ -> o.
 
 
+type top typ.
