@@ -2,7 +2,7 @@ open Batteries
 open List
 open Option
 open Lnp
-open Pretty_printer
+open Pretty_printer_lnp
 open Language
 
 let rec abella_evalExp t = match t with 

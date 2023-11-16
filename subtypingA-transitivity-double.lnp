@@ -5,7 +5,8 @@ Theorem SubtypeA-transitive-double :
 Proof.
 PremSub0-0: mutual induction on Main1 Main2.
 first:
-    for each ty in Type:
+    search.
+    for each ty in Type - Top:
         PremSub2-0: case Main2.
         for each i in ty.rule[<a].premisesIdx[<a]:
             if covariant(i, ty) then
@@ -13,10 +14,13 @@ first:
             else
                 _: apply IH1 to PremSub2-_(i) PremSub0-_(i)
         endfor.
-        search
+        search.
+        search.
+        _: case Main2. search
     endfor
 second:
-    for each ty in Type:
+    search.
+    for each ty in Type - Top:
         PremSub2-0: case Main1.
         for each i in ty.rule[<a].premisesIdx[<a]:
             if covariant(i, ty) then
@@ -24,5 +28,8 @@ second:
             else
                 _: apply IH0 to PremSub0-_(i) PremSub2-_(i)
         endfor.
+        search.
+        Decl: apply Subtyping-sound to Main1.
+        _: apply Inversion-subtype-_(ty) to Decl.
         search
     endfor

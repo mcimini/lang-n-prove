@@ -1,80 +1,27 @@
-Subtyping S ::= (arrow Contra Cov) | (bool) | (int) | (list Cov) 
-Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (myerror ) | (filteri E E E) 
-Type T ::= (arrow T T) | (int ) | (bool ) | (list T) 
-Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2) 
-Error ::= (myerror)
-Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (fix C) | (filteri C e e) | (filteri v C e) | (filteri v v C) 
-	
-
-Gamma |- (filteri E1 E2 E3) : (list T) <== Gamma |- E1 : (list T) /\ Gamma |- E2 : (arrow (int) (arrow T (bool))) /\ Gamma |- E3 : (int).
-
-(filteri (emptyList ) V1 V2) -->  (emptyList ).
-
-(filteri (cons V1 V2) V3 V4) --> (if (app (app V3 V4) V1) (cons V1 (filteri V2 V3 (succ V4)))  (filteri V2 V3 (succ V4))).
+Top ::= (top ).
+Subtyping S ::= (arrow Contra Cov) | (bool ) | (int ) | (list Cov).
+Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (myerror ) | (filteri E E E).
+Type T ::= (top ) | (arrow T T) | (int ) | (bool ) | (list T).
+Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2).
+Error ::= (myerror ).
+Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (fix C) | (filteri C e e) | (filteri v C e) | (filteri v v C).
 
 Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
-
 Gamma |- (zero ) : (int ).
-
 Gamma |- (succ E) : (int ) <== Gamma |- E : (int ).
-
 Gamma |- (tt ) : (bool ).
-
 Gamma |- (ff ) : (bool ).
-
 Gamma |- (emptyList ) : (list T).
-
 Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
-
 Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
-
-(app (abs T R) V) --> R[V/x] <== value V.
-
-Gamma |- (let E R) : T2 <== Gamma |- E : T1 /\ Gamma, x : T1 |- R : T2.
-
-(let V R) --> R[V/x] <== value V.
-
 Gamma |- (pred E) : (int ) <== Gamma |- E : (int ).
-
-(pred (zero )) --> (myerror).
-
-(pred (succ E)) --> E.
-
 Gamma |- (isZero E) : (bool ) <== Gamma |- E : (int ).
-
-(isZero (zero )) --> (tt).
-
-(isZero (succ E)) --> (ff).
-
 Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
-
-(if (tt ) E1 E2) --> E1.
-
-(if (ff ) E1 E2) --> E2.
-
 Gamma |- (head E) : T <== Gamma |- E : (list T).
-
-(head (emptyList )) --> (myerror).
-
-(head (cons E1 E2)) --> E1.
-
 Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
-
-(tail (emptyList )) --> (myerror).
-
-(tail (cons E1 E2)) --> E2.
-
 Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
-
-(fix E) --> (app E (fix E)) <== value E.
-
-Gamma |- (letrec T1 R1 R2) : T2 <== Gamma, x : T1 |- R1 : T1 /\ Gamma, x : T1 |- R2 : T2.
-
-(letrec T1 R1 R2) --> R2[(fix (abs T1 R1))/x].
-
-Gamma |- (myerror) : T.
-
-Gamma |a- (filteri E1 E2 E3) : (list T1) <== Gamma |a- E1 : (list T1) /\ Gamma |a- E2 : (arrow (int) (arrow T2 (bool))) /\ Gamma |a- E3 : (int) /\ T1 <a T2.
+Gamma |- (myerror ) : T.
+Gamma |- (filteri E1 E2 E3) : (list T) <== Gamma |- E1 : (list T) /\ Gamma |- E2 : (arrow (int ) (arrow T (bool ))) /\ Gamma |- E3 : (int ).
 Gamma |a- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |a- R : T2.
 Gamma |a- (zero ) : (int ).
 Gamma |a- (succ E) : (int ) <== Gamma |a- E : (int ).
@@ -83,69 +30,58 @@ Gamma |a- (ff ) : (bool ).
 Gamma |a- (emptyList ) : (list T).
 Gamma |a- (cons E1 E2) : (list T3) <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (list T2) /\ join T1 T2 T3.
 Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3 /\ T3 <a T1.
-Gamma |a- (let E R) : T2 <== Gamma |a- E : T1 /\ Gamma, x : T1 |a- R : T2.
 Gamma |a- (pred E) : (int ) <== Gamma |a- E : (int ).
 Gamma |a- (isZero E) : (bool ) <== Gamma |a- E : (int ).
 Gamma |a- (if E1 E2 E3) : T3 <== Gamma |a- E1 : (bool ) /\ Gamma |a- E2 : T1 /\ Gamma |a- E3 : T2 /\ join T1 T2 T3.
 Gamma |a- (head E) : T <== Gamma |a- E : (list T).
 Gamma |a- (tail E) : (list T) <== Gamma |a- E : (list T).
 Gamma |a- (fix E) : T2 <== Gamma |a- E : (arrow T1 T2) /\ T2 <a T1.
-Gamma |a- (letrec T1 R1 R2) : T2 <== Gamma, x : T1 |a- R1 : T1 /\ Gamma, x : T1 |a- R2 : T2.
-Gamma |a- (myerror) : T.
-(bool) <a (bool).
-
-(int) <a (int).
-
-(unitType) <a (unitType).
-
-(list T1) <a (list T1') <== T1 <a T1'.
-
-(option T1) <a (option T1' T2') <== T1 <a T1'.
-
+Gamma |a- (myerror ) : T.
+Gamma |a- (filteri E1 E2 E3) : (list T1) <== Gamma |a- E1 : (list T1) /\ Gamma |a- E2 : (arrow T3 (arrow T2 (bool ))) /\ Gamma |a- E3 : (int ) /\ T1 <a T2 /\ (int) <a T3.
+(top ) <a (top ).
 (arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
-
-(times T1 T2) <a (times T1' T2') <== T1 <a T1' /\ T2 <a T2'.
-
-(sum T1 T2) <a (sum T1' T2') <== T1 <a T1' /\ T2 <a T2'.
-
-(times5 T1 T2 T3 T4 T5) <a (times T1' T2' T3' T4' T5') <== T1 <a T1' /\ T2 <a T2' /\ T3 <a T3' /\ T4 <a T4' /\ T5 <a T5'.
-
-join (bool) (bool) (bool).
-
-join (int) (int) (int). 
-
-join (unitType) (unitType) (unitType).
-
-join (list T1) (list T3) (list T5) <== join T1 T3 T5.
-
-join (option T1) (option T3) (option T5) <== join T1 T3 T5.
-
+(arrow T1 T2) <a (top ).
+(int ) <a (int ).
+(int ) <a (top ).
+(bool ) <a (bool ).
+(bool ) <a (top ).
+(list T1) <a (list T1') <== T1 <a T1'.
+(list T1) <a (top ).
+join (top ) T (top ).
 join (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== meet T1 T3 T5 /\ join T2 T4 T6.
-
-join (times T1 T2) (times T3 T4) (times T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
-
-join (sum T1 T2) (sum T3 T4) (sum T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
-
-join (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== join T11 T21 T31 /\ join T12 T22 T32  /\ join T13 T23 T33  /\ join T14 T24 T34  /\ join T15 T25 T35.
-
-meet (bool) (bool) (bool).
-
-meet (int) (int) (int). 
-
-meet (unitType) (unitType) (unitType).
-
-meet (list T1) (list T3) (list T5) <== meet T1 T3 T5.
-
-meet (option T1) (option T3) (option T5) <== meet T1 T3 T5.
-
+join (arrow T1 T2) T (top ).
+join (int ) (int ) (int ).
+join (int ) T (top ).
+join (bool ) (bool ) (bool ).
+join (bool ) T (top ).
+join (list T1) (list T3) (list T5) <== join T1 T3 T5.
+join (list T1) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (arrow T1 T2) (arrow T1 T2).
+meet (top ) (int ) (int ).
+meet (top ) (bool ) (bool ).
+meet (top ) (list T1) (list T1).
 meet (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== join T1 T3 T5 /\ meet T2 T4 T6.
-
-meet (times T1 T2) (times T3 T4) (times T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
-
-meet (sum T1 T2) (sum T3 T4) (sum T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
-
-meet (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== meet T11 T21 T31 /\ meet T12 T22 T32  /\ meet T13 T23 T33  /\ meet T14 T24 T34  /\ meet T15 T25 T35.
-
-(excType ) <a (excType ).
-join (excType) (excType) (excType).
-meet (excType) (excType) (excType).
+meet (arrow T1 T2) (top ) (arrow T1 T2).
+meet (int ) (int ) (int ).
+meet (int ) (top ) (int ).
+meet (bool ) (bool ) (bool ).
+meet (bool ) (top ) (bool ).
+meet (list T1) (list T3) (list T5) <== meet T1 T3 T5.
+meet (list T1) (top ) (list T1).
+(filteri (emptyList ) V1 V2) --> (emptyList ).
+(filteri (cons V1 V2) V3 V4) --> (if (app (app V3 V4) V1) (cons V1 (filteri V2 V3 (succ V4))) (filteri V2 V3 (succ V4))).
+(app (abs T R) V) --> R[V/x] <== value V.
+(let V R) --> R[V/x] <== value V.
+(pred (zero )) --> (myerror ).
+(pred (succ E)) --> E.
+(isZero (zero )) --> (tt ).
+(isZero (succ E)) --> (ff ).
+(if (tt ) E1 E2) --> E1.
+(if (ff ) E1 E2) --> E2.
+(head (emptyList )) --> (myerror ).
+(head (cons E1 E2)) --> E1.
+(tail (emptyList )) --> (myerror ).
+(tail (cons E1 E2)) --> E2.
+(fix E) --> (app E (fix E)) <== value E.
+(letrec T1 R1 R2) --> R2[(fix (abs T1 R1))/x].

@@ -103,10 +103,10 @@ assumption :
 	{ Constr("gammaAddX", []) }
 
 grammarLine : 
-	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN ts = separated_list(MID, term)	
-	{ GrammarLine(category,metavar, Some ts) }
-	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN EMPTYCTX MID ts = option(separated_list(MID, term))	
-	{ if category = "C" then GrammarLine("Context",Some "C",ts) else GrammarLine(category,metavar,ts) }
+	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN ts = option(separated_list(MID, term)) DOT
+	{ GrammarLine(category,metavar, ts) }
+	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN EMPTYCTX MID ts = option(separated_list(MID, term)) DOT
+	{ GrammarLine(category,metavar,ts) }
 
 directives : 
 	| DIRECTIVE list(tagInfo) DOT	

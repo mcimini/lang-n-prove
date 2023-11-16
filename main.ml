@@ -3,9 +3,9 @@ open Unix
 open Filename
 open Language
 open Lnp
-open Pretty_printer
-open Pretty_printerLan
-open Abella
+open Pretty_printer_lnp
+open Pretty_printer_mod
+open Pretty_printer_thm
 open Compile
 (*
 open LanguageDef
@@ -16,7 +16,7 @@ open Macro_expander
 open Lexing
 open DeclarationsToRules
 
-let repo_dir = "repo-subD"
+let repo_dir = "repo-subDA"
 
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
@@ -45,6 +45,7 @@ let repoOfSchemas = [
     ;
     *)
 
+    (*
     (* Soundness with only declarative subtyping *)
     "./inversion-subtype.lnp"
     ;
@@ -62,8 +63,8 @@ let repoOfSchemas = [
     ;
 	"./preservation-sub.lnp"
     ;
+    *)
 
-    (*
     (* Equivalence of algorithmic and declaritive subtyping *)
     "subtyping-in-env.lnp"
     ;
@@ -81,6 +82,8 @@ let repoOfSchemas = [
     ;
     "subtypingA-transitivity.lnp"
     ;
+    "subtypingA-top.lnp"
+    ;
     "subtypingA-reflexivity.lnp"
     ;
     "subtyping-complete.lnp"
@@ -95,7 +98,6 @@ let repoOfSchemas = [
     ;
     "typing-complete.lnp"
     ;
-    *)
 
     (*
     (* Soundness with only algorithmic subtyping *)
@@ -183,6 +185,10 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	output_string mod_file ("module " ^ nameOfLanguage ^ ".\n\n"); 
 	output_string mod_file (language_prettyPrintRules lan); 
     close_out mod_file;
+    (* generate a .lan for debugging *)
+    let out_lan = open_out ("./generated/" ^ nameOfLanguage ^ ".lan") in
+    output_string out_lan (Pretty_printer_lan.prettyPrintLan lan);
+    close_out out_lan;
     print_endline ("Proofs generated in ./generated/" ^ nameOfLanguage ^ ".thm");;
 	
 let () = List.hd (List.map applyAllSchemasToOneLanguages_to_file languagesFromRepo);;

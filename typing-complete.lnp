@@ -26,17 +26,13 @@ for each e in Expression:
                     if covariant(i, p.out) then
                         (Subtype p i _): apply Inversion-subtype-_(getArgs(p.out, i)) to (Subtype p i).
                         (SubtypeA p i _): apply Inversion-subtypeA-_(getArgs(p.out, i)) to (SubtypeA p i)
-                    else
-                        (SubtypeA p i _): case (SubtypeA p i)
-                    endif.
+                    else noOp endif.
                     for each j in range(arity(getArgs(p.out, i))):
                         if isVar(getArgs(getArgs(p.out, i), j)) then noOp else
                             if covariant(j, getArgs(p.out, i)) then
                                 (Subtype p i j _): apply Inversion-subtype-_(getArgs(getArgs(p.out, i), j)) to (Subtype p i j).
                                 (SubtypeA p i j _): apply Inversion-subtypeA-_(getArgs(getArgs(p.out, i), j)) to (SubtypeA p i j)
-                            else
-                                (SubtypeA p i j _): case (SubtypeA p i j)
-                            endif
+                            else noOp endif
                         endif
                     endfor
                 endif
@@ -44,7 +40,10 @@ for each e in Expression:
         endif
     endfor.
     for each p in e.rule[|a-].premises[<a]:
-        _: apply SubtypeA-transitive to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-])
+        if findSucceeds(p.left, e.rule[|a-].premises[|a-])
+            and findSucceeds(p.right, e.rule[|a-].premises[|a-]) then
+                _: apply SubtypeA-transitive to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-])
+            else noOp
     endfor.
     for each p in e.rule[|a-].premises[join]:
         (Join _): apply Existence-of-join to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-]).

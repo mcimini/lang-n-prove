@@ -1,0 +1,4 @@
+Theorem SubtypeA-top:
+    forall*, (Main: subtypeA t (top)).
+Proof.
+skip

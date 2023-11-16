@@ -104,10 +104,15 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
         | Some(lst) -> ListOfTerms(lst)
         | None -> raise (Failure (var ^ " not found"))
     end
-    | FindSucceeds(t1, t2) ->
-        let var = List.hd (term_getVars (eval_getTerm (eval lan t1))) in
-        let premises = List.map (fun (Premise(i, p)) -> p) (eval_getListOfTerms (eval lan t2)) in
-        Boolean(Option.is_some (formulaFind var premises))
+    | FindSucceeds(t1, t2) -> begin
+        let t1 = eval_getTerm (eval lan t1) in
+        let t2 = eval_getListOfTerms (eval lan t2) in
+        match t1 with
+        | Var var ->
+            let premises = List.map (fun (Premise(i, p)) -> p) t2 in
+            Boolean(Option.is_some (formulaFind var premises))
+        | _ -> Boolean false
+    end
     | VarsOf(t1) ->
         let e = eval_getTerm (eval lan t1) in
         ListOfTerms (List.map (fun v -> Var v) (term_getVars e))
@@ -130,7 +135,8 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
     | ListDifference(t1, t2) ->
         let left = eval_getListOfTerms (eval lan t1) in
         let right = eval_getListOfTerms (eval lan t2) in
-        ListOfTerms (list_difference left right)
+        let diff = list_difference left right in
+        ListOfTerms (diff)
     | Premise _ -> Term (evaluatedExpression)
 
 let hypParamAsStr arg = match arg with

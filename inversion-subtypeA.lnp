@@ -1,4 +1,4 @@
-for each ty in Type, Theorem Inversion-subtypeA-_(ty):
+for each ty in Type - Top, Theorem Inversion-subtypeA-_(ty):
     let r = ty.rule[<a] inn
     forall*, (Main: subtypeA typ r.right) ->
         exists*, (typ = r.left) /\ AND(P in r.premises): (P).

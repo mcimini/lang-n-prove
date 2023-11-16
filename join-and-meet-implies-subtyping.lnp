@@ -5,22 +5,28 @@ Theorem Join-and-meet-implies-subtyping :
 Proof.
 (Prem 0): mutual induction on Main Main.
 first:
-    for each ty in Type:
+    search.
+    for each ty in Type - Top:
         for each i in ty.rule[join].premisesIdx[join]:
             _: apply IH0 to (Prem i)
         endfor.
         for each i in ty.rule[join].premisesIdx[meet]:
             _: apply IH1 to (Prem i)
         endfor.
+        search.
         search
     endfor
 second:
     for each ty in Type:
+        search
+    endfor.
+    for each ty in Type - Top:
         for each i in ty.rule[meet].premisesIdx[join]:
             _: apply IH0 to (Prem i)
         endfor.
         for each i in ty.rule[meet].premisesIdx[meet]:
             _: apply IH1 to (Prem i)
         endfor.
+        search.
         search
     endfor

@@ -1,6 +1,7 @@
 *.cmo
 *.cmi
 /lnp
+/generated/*.lan
 /generated/*.mod
 /generated/*.thm
 /lexer.ml
