@@ -27,7 +27,7 @@ Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3
 Gamma |a- (if E1 E2 E3) : T3 <== Gamma |a- E1 : (bool ) /\ Gamma |a- E2 : T1 /\ Gamma |a- E3 : T2 /\ join T1 T2 T3.
 Gamma |a- (head E) : T <== Gamma |a- E : (list T).
 Gamma |a- (tail E) : (list T) <== Gamma |a- E : (list T).
-Gamma |a- (let E R) : T2 <== Gamma |a- E : T1 /\ Gamma, x : T1 |a- R : T2.
+Gamma |a- (let E R) : T2 <== Gamma |a- E : T1 /\ Gamma, x : T3 |a- R : T2  /\ T1 <a T3.
 Gamma |a- (try E1 E2) : T3 <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (arrow T4 T2) /\ join T1 T2 T3 /\ (bool) <a T4.
 Gamma |a- (raise E1) : T <== Gamma |a- E1 : (bool ).
 (top ) <a (top ).

@@ -66,8 +66,6 @@ let repoOfSchemas = [
     *)
 
     (* Equivalence of algorithmic and declaritive subtyping *)
-    "subtyping-in-env.lnp"
-    ;
     "./inversion-subtype.lnp"
     ;
     "subtyping-soundness.lnp"

@@ -11,7 +11,7 @@ Gamma |- (inr E) : (sum T1 T2) <== Gamma |- E : T2.
 Gamma |- (case EE R1 R2) : T <== Gamma |- EE : (sum T1 T2) /\ Gamma, x : T1 |- R1 : T /\ Gamma, x : T2 |- R2 : T.
 Gamma |a- (inl E) : (sum T1 T2) <== Gamma |a- E : T1.
 Gamma |a- (inr E) : (sum T1 T2) <== Gamma |a- E : T2.
-Gamma |a- (case E R1 R2) : T5 <== Gamma |a- E : (sum T1 T2) /\ Gamma, x : T1 |a- R1 : T3 /\ Gamma, x : T2 |a- R2 : T4 /\ join T3 T4 T5.
+Gamma |a- (case E R1 R2) : T5 <== Gamma |a- E : (sum T11 T22) /\ Gamma, x : T1 |a- R1 : T3 /\ Gamma, x : T2 |a- R2 : T4 /\ join T3 T4 T5 /\ T11 <a T1 /\ T22 <a T2.
 (top ) <a (top ).
 (sum T1 T2) <a (sum T1' T2') <== T1 <a T1' /\ T2 <a T2'.
 (sum T1 T2) <a (top ).

@@ -1,4 +1,0 @@
-Theorem Subtyping-in-env:
-    forall*, (Main: typeOfA (consEnv x T2 Gamma) e T3) -> (Sub: subtypeA T1 T2) -> exists*, (_: typeOfA (consEnv x T1 Gamma) e T4) /\ (_: subtype T4 T3).
-Proof.
-skip

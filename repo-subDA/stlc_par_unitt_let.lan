@@ -13,7 +13,7 @@ Gamma |- (let E R) : T2 <== Gamma |- E : T1 /\ Gamma, x : T1 |- R : T2.
 Gamma |a- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |a- R : T2.
 Gamma |a- (unit ) : (unitType ).
 Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3 /\ T3 <a T1.
-Gamma |a- (let E R) : T2 <== Gamma |a- E : T1 /\ Gamma, x : T1 |a- R : T2.
+Gamma |a- (let E R) : T2 <== Gamma |a- E : T1 /\ Gamma, x : T3 |a- R : T2  /\ T1 <a T3.
 (top ) <a (top ).
 (arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
 (arrow T1 T2) <a (top ).
