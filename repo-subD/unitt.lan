@@ -1,9 +1,9 @@
-Top ::= (top)
-Subtyping S ::= (unitType) 
-Expression E ::= x | (unit )
-Type T ::= (top) | (unitType )
-Value V ::= (unit )
-Error ::= 
-Context C ::= [] | 
+Top ::= (top).
+Subtyping S ::= (unitType) .
+Expression E ::= x | (unit ).
+Type T ::= (top) | (unitType ).
+Value V ::= (unit ).
+Error ::= .
+Context C ::= [] | .
 
 Gamma |- (unit ) : (unitType ).

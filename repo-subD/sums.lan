@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (sum Cov Cov) 
-Expression E ::= x | (inl E) | (inr E) | (case E (x)E (x)E)
-Type T ::= (top) | (sum T T)
-Value V ::= (inl V1) | (inr V1)
-Error ::= 
-Context C ::= [] | (inl C) | (inr C) | (case C e e)
+Top ::= (top).
+Subtyping S ::= (sum Cov Cov) .
+Expression E ::= x | (inl E) | (inr E) | (case E (x)E (x)E).
+Type T ::= (top) | (sum T T).
+Value V ::= (inl V1) | (inr V1).
+Error ::= .
+Context C ::= [] | (inl C) | (inr C) | (case C e e).
 
 Gamma |- (inl E) : (sum T1 T2) <== Gamma |- E : T1.
 

@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (arrow Contra Cov) | (bool) | (int) | (list Cov) 
-Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (let E (x)E) | (letrec T (x)E (x)E) | (myerror ) | (append E E) 
-Type T ::= (top) | (arrow T T) | (int ) | (bool ) | (list T) 
-Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2) 
-Error ::= (myerror)
-Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (let C e) | (fix C) | (append C e) | (append v C) 
+Top ::= (top).
+Subtyping S ::= (arrow Contra Cov) | (bool) | (int) | (list Cov) .
+Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (let E (x)E) | (letrec T (x)E (x)E) | (myerror ) | (append E E) .
+Type T ::= (top) | (arrow T T) | (int ) | (bool ) | (list T) .
+Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2) .
+Error ::= (myerror).
+Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (let C e) | (fix C) | (append C e) | (append v C) .
 
 Gamma |- (append E1 E2) : (list T) <== Gamma |- E1 : (list T) /\ Gamma |- E2 : (list T).
 

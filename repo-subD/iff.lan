@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (bool )
-Expression E ::= x | (tt ) | (ff ) | (if E E E)
-Type T ::= (top) | (bool )
-Value V ::= (tt ) | (ff )
-Error ::= 
-Context C ::= [] | (if C e e)
+Top ::= (top).
+Subtyping S ::= (bool ).
+Expression E ::= x | (tt ) | (ff ) | (if E E E).
+Type T ::= (top) | (bool ).
+Value V ::= (tt ) | (ff ).
+Error ::= .
+Context C ::= [] | (if C e e).
 
 Gamma |- (tt ) : (bool ).
 

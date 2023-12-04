@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (arrow Contra Cov) | (unitType) 
-Expression E ::= x | (abs T (x)E) | (unit ) | (app E E)
-Type T ::= (top) | (arrow T T) | (unitType )
-Value V ::= (abs T1 R2) | (unit )
-Error ::= 
-Context C ::= [] | (app C e) | (app v C)
+Top ::= (top).
+Subtyping S ::= (arrow Contra Cov) | (unitType) .
+Expression E ::= x | (abs T (x)E) | (unit ) | (app E E).
+Type T ::= (top) | (arrow T T) | (unitType ).
+Value V ::= (abs T1 R2) | (unit ).
+Error ::= .
+Context C ::= [] | (app C e) | (app v C).
 
 Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
 

@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (arrow Contra Cov) | (bool) | (list Cov) 
-Expression E ::= x | (abs T (x)E) | (emptyList ) | (cons E E) | (tt ) | (ff ) | (app E E) | (head E) | (tail E) | (isnil E) | (if E E E) | (myError )
-Type T ::= (top) | (arrow T T) | (list T) | (bool )
-Value V ::= (abs T1 R2) | (emptyList ) | (cons V1 V2) | (tt ) | (ff )
-Error ::= (myError )
-Context C ::= [] | (cons C v) | (cons e C) | (app C e) | (head C) | (tail C) | (isnil C) | (if C e e)
+Top ::= (top).
+Subtyping S ::= (arrow Contra Cov) | (bool) | (list Cov) .
+Expression E ::= x | (abs T (x)E) | (emptyList ) | (cons E E) | (tt ) | (ff ) | (app E E) | (head E) | (tail E) | (isnil E) | (if E E E) | (myError ).
+Type T ::= (top) | (arrow T T) | (list T) | (bool ).
+Value V ::= (abs T1 R2) | (emptyList ) | (cons V1 V2) | (tt ) | (ff ).
+Error ::= (myError ).
+Context C ::= [] | (cons C v) | (cons e C) | (app C e) | (head C) | (tail C) | (isnil C) | (if C e e).
 
 Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
 

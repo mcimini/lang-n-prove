@@ -1,10 +1,10 @@
-Top ::= (top)
-Subtyping S ::= (arrow Contra Cov) | (times5 Cov Cov Cov Cov Cov) 
-Expression E ::= x | (abs T (x)E) | (tuple5 E E E E E) | (app E E) | (select1 E) | (select2 E) | (select3 E) | (select4 E) | (select5 E)
-Type T ::= (top) | (arrow T T) | (times5 T T T T T)
-Value V ::= (abs T1 R2) | (tuple5 V1 V2 V3 V4 V5)
-Error ::= 
-Context C ::= [] | (tuple5 C e e e e) | (tuple5 v C e e e) | (tuple5 v v C e e) | (tuple5 v v v C e) | (tuple5 v v v v C) | (app C e) | (app v C) | (select1 C) | (select2 C) | (select3 C) | (select4 C) | (select5 C)
+Top ::= (top).
+Subtyping S ::= (arrow Contra Cov) | (times5 Cov Cov Cov Cov Cov) .
+Expression E ::= x | (abs T (x)E) | (tuple5 E E E E E) | (app E E) | (select1 E) | (select2 E) | (select3 E) | (select4 E) | (select5 E).
+Type T ::= (top) | (arrow T T) | (times5 T T T T T).
+Value V ::= (abs T1 R2) | (tuple5 V1 V2 V3 V4 V5).
+Error ::= .
+Context C ::= [] | (tuple5 C e e e e) | (tuple5 v C e e e) | (tuple5 v v C e e) | (tuple5 v v v C e) | (tuple5 v v v v C) | (app C e) | (app v C) | (select1 C) | (select2 C) | (select3 C) | (select4 C) | (select5 C).
 
 Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
 
