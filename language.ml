@@ -2,6 +2,8 @@ open Batteries
 open Option
 open List
 
+let explicit_tenv = true
+
 type term = 
 	| Constr of string * (term list)
 	| LangVar of string
@@ -35,18 +37,28 @@ let term_isConstr t = match t with
 	| Constr(cname,_) -> true
 	| _ -> false
 
-let termLan_list_mem t listOfTerms : bool = List.mem (term_getCNAME t) (List.map term_getCNAME (List.filter term_isConstr listOfTerms))
+let termLan_list_mem t listOfTerms : bool =
+    if term_isConstr t then
+        List.mem (term_getCNAME t) (List.map term_getCNAME (List.filter term_isConstr listOfTerms))
+    else
+        false
+
 let termLan_list_mem_map_version listOfTerms t = termLan_list_mem t listOfTerms
+
+let list_difference a b = let notpresent x = not (List.mem x b) in List.filter notpresent a
 	
 let compareConstructors t1 t2 = termLan_list_mem t1 [t2]
 
 let language_getGrammar (Language(grammar, _)) = grammar
 let language_getRules (Language(_, rules)) = rules
+let language_addRules (Language(grammar, rest)) rules = Language(grammar, rest @ rules)
 
-let rule_getInputOfConclusion (Rule(_,Formula(predname,ts))) = if predname = "typeOf" then List.nth ts 1 else List.hd ts
+let rule_getInputOfConclusion (Rule(_,Formula(predname,ts))) =
+    if predname = "typeOf" || predname = "typeOfA" then List.nth ts 1 else List.hd ts
 let rule_getOutputOfConclusion (Rule(_,Formula(_,ts))) = List.last ts
 let rule_getPremises (Rule(premises,_)) = premises
 let rule_getConclusion (Rule(_,conclusion)) = conclusion
+let rule_getConclusionPredname (Rule(_,Formula(predname,_))) = predname
 
 let formula_getArguments (Formula(predname,ts)) = ts
 let formula_getPredname (Formula(predname,_)) = predname
@@ -57,6 +69,26 @@ let rule_ProvesOp t (Rule(_,Formula(_,ts))) = compareConstructors t (List.last t
 let language_getRulesOfOp lan cname = List.filter (fun r -> compareConstructors (rule_getInputOfConclusion r) (Constr(cname,[]))) (language_getRules lan)
 
 let rule_isPredname predname (Rule(_,Formula(predname2,_))) = predname = predname2
+
+let rec term_subst t1 var term =
+    let subst t = term_subst t var term in
+    match t1 with
+	| Constr(cname, args) -> Constr(cname, List.map subst args)
+    | LangVar(v) when v = var -> term
+    | LangVar(v) -> t1
+	| BoundVar -> BoundVar
+	| BoundTypeVar -> BoundTypeVar
+	| Abs(t1) -> Abs(subst t1)
+	| AbsType(t1) -> AbsType(subst t1)
+	| Substitution(t1, t2, t3) -> Substitution(subst t1, subst t2, subst t3)
+
+let formula_subst (Formula(pred, args)) var term =
+    let subst t = term_subst t var term in
+    Formula(pred, List.map subst args)
+
+let rule_substitution (Rule(premises, conclusion)) var term =
+    let subst f = formula_subst f var term in
+    Rule(List.map subst premises, subst conclusion)
 
 let language_getTypingRules lan = List.filter (rule_isPredname "typeOf") (language_getRules lan)
 let language_getReductionRules lan = List.filter (rule_isPredname "step") (language_getRules lan)
@@ -69,13 +101,17 @@ let numbers_to_metavariables (Constr(cname,ts)) =
 			| _ -> t) 
 	 in Constr(cname, List.mapi insert_number_to_var ts)
 
+let language_grammarCatagoryExists lan cname : bool =
+	 let grammarLine = List.filter (fun grLine -> cname = (grammarLine_getCategory grLine)) (language_getGrammar lan) in 
+     not (grammarLine = [])
+
 (* cname is a grammar syntactic category, example: Expression, Type *)
 let language_grammarLookupByCategory lan cname : term list = 
 	 let grammarLine = List.filter (fun grLine -> cname = (grammarLine_getCategory grLine)) (language_getGrammar lan) in 
 	 if grammarLine = [] then [] else 
 	 if is_none (grammarLine_getItemsOption (List.hd grammarLine)) then [] else 
 		 let grammarItems = List.filter term_isConstr (get (grammarLine_getItemsOption (List.hd grammarLine))) in 
-	 	if cname = "Value" || cname = "Context"  (* vars in Value are already numbered, Contexts do not need to get a number *)
+	 	if cname = "Value" || cname = "Context" || cname = "Subtyping"  (* vars in Value are already numbered, Contexts and Subtyping do not need to get a number *)
 			then grammarItems 
 			else List.map numbers_to_metavariables grammarItems
 
@@ -187,8 +223,16 @@ let language_getTypeOfNthArg lan cname n : term =
 	let typingCallOfNTH = List.nth (rule_getPremises ruleOfCNAME) n in  
 	 rule_getOutputOfConclusion (Rule([],typingCallOfNTH)) 
 		 (* I reuse rule_getOutputOfConclusion, not to implement formula_getOutputOfConclusion *)
-	
 
+let tmp_name_fix lan (elim: string) (value: string) : term =
+    let rules = List.filter (rule_isPredname "step") (language_getRulesOfOp lan elim) in
+    let things = (List.filter
+        (fun rule -> match (rule_getInputOfConclusion rule) with
+            | Constr(_, Constr(cname,_) :: _) when cname = value -> true
+            | _ -> false)
+        rules) in
+    if things = [] then raise (Failure(elim ^ " " ^ value)) else
+    rule_getOutputOfConclusion (List.hd things)
 (*
 
 let language_getTypingRuleOfOp lan opname = List.filter (rule_isPredname "typeOf") (language_getRules lan)

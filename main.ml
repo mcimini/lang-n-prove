@@ -3,9 +3,9 @@ open Unix
 open Filename
 open Language
 open Lnp
-open Pretty_printer
-open Pretty_printerLan
-open Abella
+open Pretty_printer_lnp
+open Pretty_printer_mod
+open Pretty_printer_thm
 open Compile
 (*
 open LanguageDef
@@ -14,51 +14,134 @@ open Theorem_evaluator
 open Macro_expander
 *)
 open Lexing
+open DeclarationsToRules
+
+let repo_dir = "repo-subDA"
 
 let get_positions lexbuf = let pos = lexbuf.lex_curr_p in pos.pos_fname ^ ":" ^ string_of_int pos.pos_lnum  ^ ":" ^ string_of_int (pos.pos_cnum - pos.pos_bol + 1)
 
 let languagesFromRepo = 
-	let dir = "repo/" in 
-	let contents = Array.to_list (Sys.readdir dir) in
-	(* let contents = List.rev_map (Filename.concat dir) contents in *)
+	let contents = Array.to_list (Sys.readdir repo_dir) in
 	let files =
 	  List.fold_left (fun (files) f ->
-	       match (stat (dir ^ f)).st_kind with
+	       match (stat (repo_dir ^ "/" ^ f)).st_kind with
 		   | S_REG -> if String.ends_with f ".lan" then files @ [f] else files (* Regular file *)
 	   	   | _ -> files)
 		   [] contents in 
 		   files
 
-let repoOfSchemas = 
-	[
+let repoOfSchemas = [
+    (*
+    (* Soundness without subtyping *)
 	"./canonical.lnp"
 	;
 	"./progress-op.lnp"
 	;
-	"./progress.lnp" 
+	"./progress.lnp"
 	;
-	"./preservation.lnp" 
-	]
+    "./error-types-all.lnp"
+    ;
+	"./preservation.lnp"
+    ;
+    *)
+
+    (*
+    (* Soundness with only declarative subtyping *)
+    "./inversion-subtype.lnp"
+    ;
+	"./canonical-sub.lnp"
+	;
+	"./progress-op-sub.lnp"
+	;
+	"./progress-sub.lnp"
+	;
+    "./inversion-typing.lnp"
+    ;
+    "./inversion-error.lnp"
+    ;
+    "./error-types-all-sub.lnp"
+    ;
+	"./preservation-sub.lnp"
+    ;
+    *)
+
+    (* Equivalence of algorithmic and declaritive subtyping *)
+    "./inversion-subtype.lnp"
+    ;
+    "subtyping-soundness.lnp"
+    ;
+    "join-and-meet-implies-subtyping.lnp"
+    ;
+    "join-implies-subtyping.lnp"
+    ;
+    "typing-soundness.lnp"
+    ;
+    "subtypingA-transitivity-double.lnp"
+    ;
+    "subtypingA-transitivity.lnp"
+    ;
+    "subtypingA-top.lnp"
+    ;
+    "subtypingA-reflexivity.lnp"
+    ;
+    "subtyping-complete.lnp"
+    ;
+    "inversion-subtypeA.lnp"
+    ;
+    "existence-of-join-and-meet.lnp"
+    ;
+    "existence-of-join.lnp"
+    ;
+    "subtyping-transitivity.lnp"
+    ;
+    "typing-complete.lnp"
+    ;
+
+    (*
+    (* Soundness with only algorithmic subtyping *)
+	"./canonical.lnp"
+	;
+	"./progress-op.lnp"
+	;
+	"./progress.lnp"
+	;
+    "subtypingA-transitivity-double.lnp"
+    ;
+    "subtypingA-transitivity.lnp"
+    ;
+    "subtypingA-reflexivity.lnp"
+    ;
+    "join-and-meet-implies-subtypingA.lnp"
+    ;
+    "join-implies-subtypingA.lnp"
+    ;
+    "error-types-all.lnp"
+    ;
+    "preservation-subA.lnp"
+    ;
+    *)
+
+    ]
+;;
 
 let parseOneLanguage filename =
   (* Parse the language, lan is the parsed language *)
-  let dir = "./repo/" in 
-  let input = (open_in (dir ^ filename)) in
-  let filebuf = Lexing.from_input input in
+  let input = (open_in (repo_dir ^ "/" ^ filename)) in
+  let filebuf = Lexing.from_channel input in
   let unusedVar = print_endline ("Reading the language: " ^ filename) in 
   let lan = try (ParserLan.fileLan LexerLan.token filebuf) with
-						    | LexerLan.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
-						    | ParserLan.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
+						    | LexerLan.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
+						    | ParserLan.Error -> raise(Failure(filename ^ ": Parser error: " ^ get_positions filebuf)) in
    let unusedVar = IO.close_in input; in 
-      lan
+      (language_addRules lan (language_subtypeDeclarationsAsRules lan))
 
 let parseTheSchema filename = 
    (* Parse the theorem&proof schema, schema is the var of the parsed schema *)
    let inputSchema = (open_in filename) in
-   let filebuf = Lexing.from_input inputSchema in
+   let filebuf = Lexing.from_channel inputSchema in
    let schema = try (Parser.file Lexer.token filebuf) with
- 						    | Lexer.Error msg -> raise(Failure("Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
- 						    | Parser.Error -> raise(Failure("Parser error: " ^ get_positions filebuf)) in
+ 						    | Lexer.Error msg -> raise(Failure(filename ^ ": Lexer error: " ^ get_positions filebuf ^ " with message: " ^ msg))
+ 						    | Parser.Error -> raise(Failure(filename ^ ": Parser error: " ^ get_positions filebuf)) in
 
    let unusedVar = IO.close_in inputSchema; in 
        schema
@@ -82,14 +165,17 @@ let errorTypesAllTheorem lan =
 
 let applyAllSchemasToOneLanguages_to_file filenameLan = 	
 	let schemas = List.map parseTheSchema repoOfSchemas in 
+    let mapOfRel = [("left", Num 0); ("right", Num 1); ("exp", Num 1); ("out", Num 2)] in
+    let schemas = List.map (fun schema -> Substitution.substitution_schemaByMap schema mapOfRel) schemas in
 	let lan = parseOneLanguage filenameLan in 
 	let result = List.concat (List.map (compile lan) schemas) in (* concat, so result is a list of theorem&proof *)
 	let nameOfLanguage = Filename.chop_extension filenameLan in 
 	(* generate Abella proof .thm *)
 	let thm_file = open_out ("./generated/" ^ nameOfLanguage ^ ".thm") in
 	output_string thm_file ("Specification \"" ^ nameOfLanguage ^ "\". \n\n"); 
+    output_string thm_file "Close typ. Close term.\n\n";
 	output_string thm_file (progressesDefinition); 
-	output_string thm_file (errorTypesAllTheorem lan); 
+	(*output_string thm_file (errorTypesAllTheorem lan); *)
 	List.map (output_string thm_file) (List.map abella_thrAndProof result); 
     close_out thm_file;
 	(* generate language definition .mod *)
@@ -97,6 +183,10 @@ let applyAllSchemasToOneLanguages_to_file filenameLan =
 	output_string mod_file ("module " ^ nameOfLanguage ^ ".\n\n"); 
 	output_string mod_file (language_prettyPrintRules lan); 
     close_out mod_file;
+    (* generate a .lan for debugging *)
+    let out_lan = open_out ("./generated/" ^ nameOfLanguage ^ ".lan") in
+    output_string out_lan (Pretty_printer_lan.prettyPrintLan lan);
+    close_out out_lan;
     print_endline ("Proofs generated in ./generated/" ^ nameOfLanguage ^ ".thm");;
 	
 let () = List.hd (List.map applyAllSchemasToOneLanguages_to_file languagesFromRepo);;

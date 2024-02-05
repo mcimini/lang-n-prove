@@ -1,0 +1,20 @@
+Theorem Type-preservation : 
+	forall e1, forall e2, forall typ, (Main : typeOf (empty) e1 typ) -> (Step : step e1 e2) -> (_ :  typeOf (empty) e2 typ). 
+Proof. 
+Typing_(0): induction on Main.  
+for each e in Expression: 
+	M_(e) : case Step. 
+	for each tg in targetsFromValue(e): if containsSubstitution(tg) then skip else search endfor. 
+    if isEliminationForm(e) then
+        for each v in valuesOf(getArgType(e,0)):
+            if containsSubstitution(targetOfElimForm(e, v)) then skip else _: apply Inversion-typing-_(v) to Typing_(0). search endfor
+    else noOp endif.
+    if isErrorHandler(e) then
+        for each err in Error:
+            if containsSubstitution(targetOfErrorHandler(e, err)) then skip else _: apply Inversion-typing-_(err) to Typing_(0). search
+        endfor
+    else noOp endif.
+	for each i in contextualArgs(e): _ : apply IH0 to Typing_(i) M_(e). search endfor.
+	for each i in contextualArgs(e): if isErrorHandler(e) and (i = 0) then noOp else backchain on Error-types-all endfor
+endfor.
+_: apply IH0 to Typing_(0) Step. search

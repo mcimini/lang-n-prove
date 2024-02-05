@@ -1,0 +1,5 @@
+Theorem Error-types-all :
+        forall e, forall typ1, forall typ2, (Main : typeOf (empty) e typ1) -> (ErrHyp: error e) -> (_: typeOf (empty) e typ2).
+Proof.
+intros. _: case ErrHyp.
+for each e in Error: _: case Main. search endfor

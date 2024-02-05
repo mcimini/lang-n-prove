@@ -1,0 +1,35 @@
+Top ::= (top ).
+Subtyping S ::= (times5 Cov Cov Cov Cov Cov).
+Expression E ::= x | (tuple5 E E E E E) | (select1 E) | (select2 E) | (select3 E) | (select4 E) | (select5 E).
+Type T ::= (top ) | (times5 T T T T T).
+Value V ::= (tuple5 V1 V2 V3 V4 V5).
+Error ::= .
+Context C ::= [] | (tuple5 C e e e e) | (tuple5 v C e e e) | (tuple5 v v C e e) | (tuple5 v v v C e) | (tuple5 v v v v C) | (select1 C) | (select2 C) | (select3 C) | (select4 C) | (select5 C).
+
+Gamma |- (tuple5 E1 E2 E3 E4 E5) : (times5 T1 T2 T3 T4 T5) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2 /\ Gamma |- E3 : T3 /\ Gamma |- E4 : T4 /\ Gamma |- E5 : T5.
+Gamma |- (select1 E) : T1 <== Gamma |- E : (times5 T1 T2 T3 T4 T5).
+Gamma |- (select2 E) : T2 <== Gamma |- E : (times5 T1 T2 T3 T4 T5).
+Gamma |- (select3 E) : T3 <== Gamma |- E : (times5 T1 T2 T3 T4 T5).
+Gamma |- (select4 E) : T4 <== Gamma |- E : (times5 T1 T2 T3 T4 T5).
+Gamma |- (select5 E) : T5 <== Gamma |- E : (times5 T1 T2 T3 T4 T5).
+Gamma |a- (tuple5 E1 E2 E3 E4 E5) : (times5 T1 T2 T3 T4 T5) <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : T2 /\ Gamma |a- E3 : T3 /\ Gamma |a- E4 : T4 /\ Gamma |a- E5 : T5.
+Gamma |a- (select1 E) : T1 <== Gamma |a- E : (times5 T1 T2 T3 T4 T5).
+Gamma |a- (select2 E) : T2 <== Gamma |a- E : (times5 T1 T2 T3 T4 T5).
+Gamma |a- (select3 E) : T3 <== Gamma |a- E : (times5 T1 T2 T3 T4 T5).
+Gamma |a- (select4 E) : T4 <== Gamma |a- E : (times5 T1 T2 T3 T4 T5).
+Gamma |a- (select5 E) : T5 <== Gamma |a- E : (times5 T1 T2 T3 T4 T5).
+(top ) <a (top ).
+(times5 T1 T2 T3 T4 T5) <a (times5 T1' T2' T3' T4' T5') <== T1 <a T1' /\ T2 <a T2' /\ T3 <a T3' /\ T4 <a T4' /\ T5 <a T5'.
+(times5 T1 T2 T3 T4 T5) <a (top ).
+join (top ) T (top ).
+join (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== join T11 T21 T31 /\ join T12 T22 T32 /\ join T13 T23 T33 /\ join T14 T24 T34 /\ join T15 T25 T35.
+join (times5 T1 T2 T3 T4 T5) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (times5 T1 T2 T3 T4 T5) (times5 T1 T2 T3 T4 T5).
+meet (times5 T11 T12 T13 T14 T15) (times5 T21 T22 T23 T24 T25) (times5 T31 T32 T33 T34 T35) <== meet T11 T21 T31 /\ meet T12 T22 T32 /\ meet T13 T23 T33 /\ meet T14 T24 T34 /\ meet T15 T25 T35.
+meet (times5 T1 T2 T3 T4 T5) (top ) (times5 T1 T2 T3 T4 T5).
+(select1 (tuple5 E1 E2 E3 E4 E5)) --> E1.
+(select2 (tuple5 E1 E2 E3 E4 E5)) --> E2.
+(select3 (tuple5 E1 E2 E3 E4 E5)) --> E3.
+(select4 (tuple5 E1 E2 E3 E4 E5)) --> E4.
+(select5 (tuple5 E1 E2 E3 E4 E5)) --> E5.

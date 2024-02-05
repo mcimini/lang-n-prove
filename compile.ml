@@ -12,13 +12,7 @@ open Substitution
 *)
 let unusedVar = "_unused_"
 
-let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 
-	| Constr(cname, ts) -> Constructor(cname, List.map langConstructor_to_LNPConstructor ts) 
-	| LangVar(var) -> Var(var)
-	| Abs(t) -> langConstructor_to_LNPConstructor t (* Here you miss (X)e and just display e *)
-	| AbsType(t) -> langConstructor_to_LNPConstructor t 
-	| Substitution(t1,t2,t3) -> Constructor("substitution", [])
-	(* | _ -> raise(Failure(dump termFromLanguage))*)
+let evalExp_of_formula (f: formula): evaluatedExpression = Formula f
 
 type eval_result = 
 	| Term of evaluatedExpression
@@ -60,6 +54,95 @@ let rec eval lan evaluatedExpression : eval_result = match evaluatedExpression w
 							| _ -> Boolean false )
 	| OrTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) || eval_getBoolean (eval lan t2))
 	| AndTerm(t1, t2) -> Boolean (eval_getBoolean (eval lan t1) && eval_getBoolean (eval lan t2))
+    | Dot(t, Relation(pred)) ->
+        let name = term_getConstructorName (eval_getTerm (eval lan t)) in
+        let rules = List.filter (rule_isPredname pred) (language_getRulesOfOp lan name) in
+        Term (Rule (List.hd rules))
+    | Dot(Rule r, Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments (rule_getConclusion r)) n))
+    | Dot(Rule r, Premises(None)) -> ListOfTerms (List.map evalExp_of_formula (rule_getPremises r))
+    | Dot(Premise(i, p), Num n) -> Term (langConstructor_to_LNPConstructor (List.nth (formula_getArguments p) n))
+    | Dot(t, Premises(Some(predname))) ->
+        let (Lnp.Rule r) = (eval_getTerm (eval lan t)) in
+        let premises = (rule_getPremises r) in
+        ListOfTerms (
+            (List.filter
+                (fun (Premise(i, p)) -> formula_getPredname p = predname)
+                (List.mapi (fun i p -> Premise(i, p)) premises)))
+    | Dot(t, PremisesIdx predname) ->
+        let (Lnp.Rule r) = (eval_getTerm (eval lan t)) in
+        let premises = (rule_getPremises r) in
+        ListOfTerms (List.map numberToNumTerm
+            (List.filter
+                (fun i -> formula_getPredname (List.nth premises i) = predname)
+                (List.mapi (fun i _ -> i) premises)))
+    | Rule(_) | Formula(_) -> Term(evaluatedExpression)
+    | Align(t1, t2, Num n1, Num n2) ->
+        let (Lnp.Rule(r1)) = eval_getTerm (eval lan t1) in
+        let (Lnp.Rule(r2)) = eval_getTerm (eval lan t2) in
+        let conc1 = rule_getConclusion r1 in
+        let conc2 = rule_getConclusion r2 in
+        let t1 = List.nth (formula_getArguments conc1) n1 in
+        let t2 = List.nth (formula_getArguments conc2) n2 in
+        let substs = constr_unify t1 t2 in
+        Term (Rule (List.fold_left (fun rule (var, term) -> rule_substitution rule var term) r1 substs))
+    | Append(t1, t2) ->
+        let left = eval_getListOfTerms (eval lan t1) in
+        let right = eval_getListOfTerms (eval lan t2) in
+        ListOfTerms (left @ right)
+    | Covariant(t1, t2) ->
+        let i = eval_getNumber (eval lan t1) in
+        let ty = term_getConstructorName (eval_getTerm (eval lan t2)) in
+        let category = if language_grammarCatagoryExists lan "Subtyping" then "Subtyping" else "SubtypingA" in
+        let subtyping = language_grammarLookupByCategory lan category in
+        let ty_constr = List.find (fun (Constr(cname, _)) -> cname = ty) subtyping in
+        let LangVar(variance) = List.nth (term_getArguments ty_constr) i in
+        Boolean (String.starts_with variance "Cov" || String.starts_with variance "AbsCov")
+    | FindVarInPremises(t1, t2) -> begin
+        let var = List.hd (term_getVars (eval_getTerm (eval lan t1))) in
+        let premises = List.map (fun (Premise(i, p)) -> p) (eval_getListOfTerms (eval lan t2)) in
+        match (formulaFind var premises) with
+        | Some(lst) -> ListOfTerms(lst)
+        | None -> raise (Failure (var ^ " not found"))
+    end
+    | FindSucceeds(t1, t2) -> begin
+        let t1 = eval_getTerm (eval lan t1) in
+        let t2 = eval_getListOfTerms (eval lan t2) in
+        match t1 with
+        | Var var ->
+            let premises = List.map (fun (Premise(i, p)) -> p) t2 in
+            Boolean(Option.is_some (formulaFind var premises))
+        | _ -> Boolean false
+    end
+    | VarsOf(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        ListOfTerms (List.map (fun v -> Var v) (term_getVars e))
+    | TargetOfElimForm(t1, t2) | TargetOfErrorHandler(t1, t2) ->
+        let elim = (term_getConstructorName (eval_getTerm (eval lan t1))) in
+        let value = (term_getConstructorName (eval_getTerm (eval lan t2))) in
+        Term (langConstructor_to_LNPConstructor (tmp_name_fix lan elim value))
+    | HasEnvType(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        Boolean (is_some (formulaEnvType e))
+    | EnvType(t1) ->
+        let e = eval_getTerm (eval lan t1) in
+        Term (langConstructor_to_LNPConstructor (Option.get (formulaEnvType e)))
+    | Range(t1) ->
+        let Num n = eval_getTerm (eval lan t1) in
+        ListOfTerms (List.init n (fun i -> Num i))
+    | Arity(t1) ->
+        let Constructor (_, args) = eval_getTerm (eval lan t1) in
+        Term (Num (List.length args))
+    | ListDifference(t1, t2) ->
+        let left = eval_getListOfTerms (eval lan t1) in
+        let right = eval_getListOfTerms (eval lan t2) in
+        let diff = list_difference left right in
+        ListOfTerms (diff)
+    | Premise _ -> Term (evaluatedExpression)
+
+let hypParamAsStr arg = match arg with
+    | Var("_") -> "0"
+    | Premise(i, _) -> string_of_int i
+    | Num(n) -> string_of_int n
 
 let compile_lnp_name lan lnp_name = match lnp_name with 
 	| SuffixedString(str, evaluatedExpression) -> let suffix = (match eval lan evaluatedExpression with 
@@ -67,6 +150,11 @@ let compile_lnp_name lan lnp_name = match lnp_name with
 														| Number(n) -> string_of_int n
 														| _ -> "Wrong term computed as suffix to append to a name")
 													in String (str ^ suffix)
+    | Function(name, args) ->
+        String(name ^ "-" ^ (String.concat "-" (List.map hypParamAsStr args)))
+    | ApplyFromList(name, evaluatedExpression) ->
+        let args = eval_getListOfTerms (eval lan evaluatedExpression) in
+        String(name ^ "-" ^ (String.concat "-" (List.map hypParamAsStr args)))
 	| _ -> lnp_name
 	
 let rec compile_formula lan formula = match formula with 
@@ -84,6 +172,38 @@ let rec compile_formula lan formula = match formula with
 	| Imply(formula1, formula2) ->  if compile_formula lan formula2 = Top then compile_formula lan formula1 else Imply(compile_formula lan formula1, compile_formula lan formula2)
 	| And(formula1, formula2) -> if compile_formula lan formula2 = Top then compile_formula lan formula1 else And(compile_formula lan formula1, compile_formula lan formula2)
 	| Or(formula1, formula2) -> if compile_formula lan formula2 = Bottom then compile_formula lan formula1 else Or(compile_formula lan formula1, compile_formula lan formula2)
+    | ExistStar(formula) -> ExistStar(compile_formula lan formula)
+    | ForallStar(formula) -> ForallStar(compile_formula lan formula)
+    | Let(var, t, formula) -> compile_formula lan (substitution_formula formula var (eval_getTerm (eval lan t)))
+
+(* expect formula is already compiled *)
+let rec expand_some_stars ?(bound_vars = []) formula =
+    match formula with
+	| Top -> Top
+	| Bottom -> Bottom
+	| Formula(lnp_name, predname, ts) -> formula
+	| Forall(var2, formula) -> Forall(var2, expand_some_stars ~bound_vars:(var2 :: bound_vars) formula)
+	| Exists(var2, formula) -> Exists(var2, expand_some_stars ~bound_vars:(var2 :: bound_vars) formula)
+	| ForallVars(t, formula) -> assert false
+	| ExistsVars(t, formula) -> assert false
+	| EqualFormula(t1, t2) -> formula
+	| OrMacro(var2, t, formula) -> assert false
+	| AndMacro(var2, t, formula) -> assert false
+	| ImplyMacro(var2, t, formula) -> assert false
+	| Imply(formula1, formula2) -> Imply(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+	| And(formula1, formula2) -> And(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+	| Or(formula1, formula2) -> Or(expand_some_stars ~bound_vars formula1, expand_some_stars ~bound_vars formula2)
+    | ExistStar(formula) -> makeExists (list_difference (formula_free_vars formula) bound_vars) formula
+    | ForallStar(formula) -> makeForall (list_difference (formula_free_vars formula) bound_vars) formula
+    | Let(var, t, formula) -> assert false
+    | FVar(var) -> assert false
+
+let rec expand_stars formula =
+    let expanded = expand_some_stars formula in
+    if expanded = formula then
+        formula
+    else
+        expand_stars expanded
 	
 let rec compile_proof lan names proof = match proof with 
 | Intros -> Intros
@@ -93,15 +213,19 @@ let rec compile_proof lan names proof = match proof with
 | Case(lnp_name1, lnp_name2) -> Case(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2)
 | CaseStar(lnp_name1, lnp_name2, proof) -> NoOp
 | Induction(lnp_name1, lnp_name2) -> Induction(compile_lnp_name lan lnp_name1,compile_lnp_name lan lnp_name2)
+| MutualInduction(lnp_name1, lnp_name2, lnp_name3, proof1, proof2) -> MutualInduction(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, compile_lnp_name lan lnp_name3, compile_proof lan names proof1, compile_proof lan names proof2)
 | InductionStar(lnp_name1, lnp_name2, proof) -> NoOp
-| Apply(lnp_name1, lnp_name2, lnp_names) -> Apply(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, List.map (compile_lnp_name lan) lnp_names)
+| Apply(lnp_name1, lnp_name2, lnp_names, inst) -> Apply(compile_lnp_name lan lnp_name1, compile_lnp_name lan lnp_name2, List.map (compile_lnp_name lan) lnp_names, inst)
 | Backchain(lnp_name) -> Backchain(compile_lnp_name lan lnp_name)
 | If(t, proof1, proof2) -> if eval_getBoolean (eval lan t) then compile_proof lan names proof1 else compile_proof lan names proof2
 | ForEachProof(var, t, proof) -> makeSeq (List.map (compile_proof lan names) (List.map (substitution_proof proof var) (eval_getListOfTerms (eval lan t))))
 | Seq(proof1, proof2) -> if compile_proof lan names proof1 = NoOp then compile_proof lan names proof2 else Seq(compile_proof lan names proof1, compile_proof lan names proof2)
 
 let compileInstantiated lan schema = 
-	ForEachThm(None, compile_lnp_name lan (schema_getTheoremName schema), compile_formula lan (schema_getTheorem schema), compile_proof lan (map_names_formulae_in_theorem (schema_getTheorem schema)) (schema_getProof schema))
+	ForEachThm(None,
+        compile_lnp_name lan (schema_getTheoremName schema),
+        expand_stars (compile_formula lan (schema_getTheorem schema)),
+        compile_proof lan (map_names_formulae_in_theorem (schema_getTheorem schema)) (schema_getProof schema))
 	
 let compile lan schema : schema list = 
 	let (var, substList) : (string * (evaluatedExpression list)) = 

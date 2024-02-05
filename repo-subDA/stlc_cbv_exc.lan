@@ -1,0 +1,38 @@
+Top ::= (top ).
+Subtyping S ::= (arrow Contra Cov) | (excType ).
+Expression E ::= x | (abs T (x)E) | (excValue ) | (app E E) | (try E E) | (raise E).
+Type T ::= (top ) | (arrow T T) | (excType ).
+Value V ::= (abs T1 R2) | (excValue ).
+Error ::= (raise V1).
+Context C ::= [] | (app C e) | (app v C) | (try C e) | (raise C).
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+Gamma |- (excValue ) : (excType ).
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+Gamma |- (try E1 E2) : T <== Gamma |- E1 : T /\ Gamma |- E2 : (arrow (excType ) T).
+Gamma |- (raise E) : T <== Gamma |- E : (excType ).
+Gamma |a- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |a- R : T2.
+Gamma |a- (excValue ) : (excType ).
+Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3 /\ T3 <a T1.
+Gamma |a- (try E1 E2) : T3 <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (arrow T4 T2) /\ join T1 T2 T3 /\ (excType) <a T4.
+Gamma |a- (raise E) : T <== Gamma |a- E : (excType ).
+(top ) <a (top ).
+(arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
+(arrow T1 T2) <a (top ).
+(excType ) <a (excType ).
+(excType ) <a (top ).
+join (top ) T (top ).
+join (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== meet T1 T3 T5 /\ join T2 T4 T6.
+join (arrow T1 T2) T (top ).
+join (excType ) (excType ) (excType ).
+join (excType ) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (arrow T1 T2) (arrow T1 T2).
+meet (top ) (excType ) (excType ).
+meet (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== join T1 T3 T5 /\ meet T2 T4 T6.
+meet (arrow T1 T2) (top ) (arrow T1 T2).
+meet (excType ) (excType ) (excType ).
+meet (excType ) (top ) (excType ).
+(app (abs T R) V) --> R[V/x] <== value V.
+(try E1 E2) --> E1 <== value E1.
+(try (raise E1) E2) --> (app E2 E1).

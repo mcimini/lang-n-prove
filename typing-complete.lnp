@@ -1,0 +1,41 @@
+Theorem Typing-complete: forall gamma, forall*, (Main: typeOf gamma e t1) -> exists*, (_: typeOfA gamma e t2) /\ (_: subtype t2 t1).
+Proof.
+(Prem _): induction on Main.
+for each e in Expression:
+    for each p in e.rule[|a-].premises[|a-]:
+        (Ih p _): apply IH0 to (Prem p).
+        (SubtypeA p): apply Subtyping-complete to (Ih p 1).
+        if isVar(p.out) then noOp else
+            (Subtype p _): apply Inversion-subtype-_(p.out) to (Ih p 1).
+            (SubtypeA p _): apply Inversion-subtypeA-_(p.out) to (SubtypeA p).
+            for each i in range(arity(p.out)):
+                if isVar(getArgs(p.out, i)) then noOp else
+                    if covariant(i, p.out) then
+                        (Subtype p i _): apply Inversion-subtype-_(getArgs(p.out, i)) to (Subtype p i).
+                        (SubtypeA p i _): apply Inversion-subtypeA-_(getArgs(p.out, i)) to (SubtypeA p i)
+                    else noOp endif.
+                    for each j in range(arity(getArgs(p.out, i))):
+                        if isVar(getArgs(getArgs(p.out, i), j)) then noOp else
+                            if covariant(j, getArgs(p.out, i)) then
+                                (Subtype p i j _): apply Inversion-subtype-_(getArgs(getArgs(p.out, i), j)) to (Subtype p i j).
+                                (SubtypeA p i j _): apply Inversion-subtypeA-_(getArgs(getArgs(p.out, i), j)) to (SubtypeA p i j)
+                            else noOp endif
+                        endif
+                    endfor
+                endif
+            endfor
+        endif
+    endfor.
+    for each p in e.rule[|a-].premises[<a]:
+        if findSucceeds(p.left, e.rule[|a-].premises[|a-])
+            and findSucceeds(p.right, e.rule[|a-].premises[|a-]) then
+                _: apply SubtypeA-transitive to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-])
+            else noOp
+    endfor.
+    for each p in e.rule[|a-].premises[join]:
+        (Join _): apply Existence-of-join to (SubtypeA <= find p.left in e.rule[|a-].premises[|a-]) (SubtypeA <= find p.right in e.rule[|a-].premises[|a-]).
+        _: apply Subtyping-sound to (Join 1)
+    endfor.
+    search
+endfor.
+_: apply IH0 to (Prem 0). search

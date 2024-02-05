@@ -1,23 +1,18 @@
-for f in ./generated/*.thm; do
-  abella "$f" |  tail -3 > "$f".result
+#!/bin/bash
+
+shopt -s nullglob
+
+here="$(dirname "$0")"
+cd "$here/generated"
+
+total=0
+fails=0
+for i in *.thm; do
+    total=$(($total + 1))
+    abella "$i" > /dev/null || {
+        fails=$(($fails + 1))
+        echo -e "failed: $i\n"
+    }
 done
-
-counter=0
-for f in ./generated/*.result; do
-  if grep -q -e "error:" -e "Error:" "$f" 
-  then 
-	  echo "Proof error: " "$f"
-	  let counter++
-  else 
-	  echo "" >> "$f"
-  fi
-done
-
-rm ./generated/*.result
-
-if [ "$counter" -eq 0 ];
-	then
-		echo "All proofs are successful."
-	else
-		echo "The proofs above throw an error."
-fi
+echo $total proofs attempted
+echo $fails failures

@@ -1,0 +1,13 @@
+for each ty in Type - Top, Theorem Inversion-subtypeA-_(ty):
+    let r = ty.rule[<a] inn
+    forall*, (Main: subtypeA typ r.right) ->
+        exists*, (typ = r.left) /\ AND(P in r.premises): (P).
+
+Proof.
+intros.
+Sub: apply Subtyping-sound to Main.
+(Derived _): apply Inversion-subtype-_(ty) to Sub.
+for each p in ty.rule[<a].premises[<a]:
+    _: apply Subtyping-complete to (Derived p)
+endfor.
+search

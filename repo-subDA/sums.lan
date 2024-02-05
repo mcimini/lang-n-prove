@@ -1,0 +1,26 @@
+Top ::= (top ).
+Subtyping S ::= (sum Cov Cov).
+Expression E ::= x | (inl E) | (inr E) | (case E (x)E (x)E).
+Type T ::= (top ) | (sum T T).
+Value V ::= (inl V1) | (inr V1).
+Error ::= .
+Context C ::= [] | (inl C) | (inr C) | (case C e e).
+
+Gamma |- (inl E) : (sum T1 T2) <== Gamma |- E : T1.
+Gamma |- (inr E) : (sum T1 T2) <== Gamma |- E : T2.
+Gamma |- (case EE R1 R2) : T <== Gamma |- EE : (sum T1 T2) /\ Gamma, x : T1 |- R1 : T /\ Gamma, x : T2 |- R2 : T.
+Gamma |a- (inl E) : (sum T1 T2) <== Gamma |a- E : T1.
+Gamma |a- (inr E) : (sum T1 T2) <== Gamma |a- E : T2.
+Gamma |a- (case E R1 R2) : T5 <== Gamma |a- E : (sum T11 T22) /\ Gamma, x : T1 |a- R1 : T3 /\ Gamma, x : T2 |a- R2 : T4 /\ join T3 T4 T5 /\ T11 <a T1 /\ T22 <a T2.
+(top ) <a (top ).
+(sum T1 T2) <a (sum T1' T2') <== T1 <a T1' /\ T2 <a T2'.
+(sum T1 T2) <a (top ).
+join (top ) T (top ).
+join (sum T1 T2) (sum T3 T4) (sum T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
+join (sum T1 T2) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (sum T1 T2) (sum T1 T2).
+meet (sum T1 T2) (sum T3 T4) (sum T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
+meet (sum T1 T2) (top ) (sum T1 T2).
+(case (inl V) R1 R2) --> R1[V/x] <== value V.
+(case (inr V) R1 R2) --> R2[V/x] <== value V.

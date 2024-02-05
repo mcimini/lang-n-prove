@@ -1,0 +1,38 @@
+Top ::= (top ).
+Subtyping S ::= (arrow Contra Cov) | (times Cov Cov).
+Expression E ::= x | (abs T (x)E) | (pair E E) | (app E E) | (fst E) | (snd E).
+Type T ::= (top ) | (arrow T T) | (times T T).
+Value V ::= (abs T1 R2) | (pair V1 V2).
+Error ::= .
+Context C ::= [] | (pair C e) | (pair v C) | (app C e) | (app v C) | (fst C) | (snd C).
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+Gamma |- (pair E1 E2) : (times T1 T2) <== Gamma |- E1 : T1 /\ Gamma |- E2 : T2.
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+Gamma |- (fst E) : T1 <== Gamma |- E : (times T1 T2).
+Gamma |- (snd E) : T2 <== Gamma |- E : (times T1 T2).
+Gamma |a- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |a- R : T2.
+Gamma |a- (pair E1 E2) : (times T1 T2) <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : T2.
+Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3 /\ T3 <a T1.
+Gamma |a- (fst E) : T1 <== Gamma |a- E : (times T1 T2).
+Gamma |a- (snd E) : T2 <== Gamma |a- E : (times T1 T2).
+(top ) <a (top ).
+(arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
+(arrow T1 T2) <a (top ).
+(times T1 T2) <a (times T1' T2') <== T1 <a T1' /\ T2 <a T2'.
+(times T1 T2) <a (top ).
+join (top ) T (top ).
+join (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== meet T1 T3 T5 /\ join T2 T4 T6.
+join (arrow T1 T2) T (top ).
+join (times T1 T2) (times T3 T4) (times T5 T6) <== join T1 T3 T5 /\ join T2 T4 T6.
+join (times T1 T2) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (arrow T1 T2) (arrow T1 T2).
+meet (top ) (times T1 T2) (times T1 T2).
+meet (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== join T1 T3 T5 /\ meet T2 T4 T6.
+meet (arrow T1 T2) (top ) (arrow T1 T2).
+meet (times T1 T2) (times T3 T4) (times T5 T6) <== meet T1 T3 T5 /\ meet T2 T4 T6.
+meet (times T1 T2) (top ) (times T1 T2).
+(app (abs T R) V) --> R[V/x] <== value V.
+(fst (pair E1 E2)) --> E1.
+(snd (pair E1 E2)) --> E2.

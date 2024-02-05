@@ -1,0 +1,24 @@
+for each e in Expression, Theorem Progress-_(e) : 
+	forall ty, forallVars(e), (Main : typeOf (empty) e ty) 
+		-> IMPLY(i in evaluationOrder(e)): (Prgs_(i) : progresses getArgs(e,i)) endIMPLY
+		-> (_ : progresses e).
+Proof. 
+Typing_(0): induction on Main.
+for each i in evaluationOrder(e): ProgressHyp_(i) : case Prgs_(i) endfor.
+if isEliminationForm(e) 
+ then
+	  Canonical : apply Canonical-form-_(getArgType(e,0)) to Typing_(0) ProgressHyp_(0). 
+	  if isSingleValue(getArgType(e,0)) then noOp else _ : case Canonical endif.
+	  for each v in valuesOf(getArgType(e,0)): search endfor.
+	  for each i in evaluationOrder(e): search. search endfor
+ else 
+ if isErrorHandler(e) 
+   then search.
+        _ : case ProgressHyp_(0). search. 
+		search.
+	   for each i in evaluationOrder(e): if (i = 0) then noOp else search. search endfor
+   else search.
+	    for each i in evaluationOrder(e): search. search endfor
+ endif
+ endif.
+backchain on IH0

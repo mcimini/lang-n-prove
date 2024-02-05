@@ -1,0 +1,7 @@
+for each err in Error, Theorem Inversion-typing-_(err):
+    let trule = err.rule[|-] inn
+    forall*, (Main : typeOf Gamma trule.exp trule.out) ->
+        exists*, AND(P in trule.premises): (P) endAND.
+Proof.
+_: induction on Main.
+search. backchain on IH0

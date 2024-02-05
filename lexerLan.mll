@@ -29,6 +29,7 @@ rule token = parse
   | "[]" { EMPTYCTX }
   | "Gamma" { GAMMA }
   | "|-" { TURNSTYLE }
+  | "|a-" { TURNSTYLEA }
   | ":" { COLON }
   | "(" { LEFTPAR }
   | ")" { RIGHTPAR }
@@ -42,6 +43,9 @@ rule token = parse
   | "value" { VALUEPRED }
   | "%" { DIRECTIVE }
   | "<:" { SUBTYPING }
+  | "<a" { SUBTYPINGA }
+  | "join" { JOIN }
+  | "meet" { MEET }
   | idLOW             { VARLEX (Lexing.lexeme lexbuf) }
   | idUP             { VARTERM (Lexing.lexeme lexbuf) }
   | eof             { EOF }

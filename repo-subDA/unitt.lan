@@ -1,0 +1,20 @@
+Top ::= (top ).
+Subtyping S ::= (unitType ).
+Expression E ::= x | (unit ).
+Type T ::= (top ) | (unitType ).
+Value V ::= (unit ).
+Error ::= .
+Context C ::= [] | .
+
+Gamma |- (unit ) : (unitType ).
+Gamma |a- (unit ) : (unitType ).
+(top ) <a (top ).
+(unitType ) <a (unitType ).
+(unitType ) <a (top ).
+join (top ) T (top ).
+join (unitType ) (unitType ) (unitType ).
+join (unitType ) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (unitType ) (unitType ).
+meet (unitType ) (unitType ) (unitType ).
+meet (unitType ) (top ) (unitType ).

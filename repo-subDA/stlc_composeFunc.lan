@@ -1,0 +1,86 @@
+Top ::= (top ).
+Subtyping S ::= (arrow Contra Cov) | (int ) | (bool ) | (list Cov).
+Expression E ::= x | (abs T (x)E) | (zero ) | (succ E) | (tt ) | (ff ) | (emptyList ) | (cons E E) | (app E E) | (pred E) | (isZero E) | (if E E E) | (head E) | (tail E) | (fix E) | (myerror ) | (composeFun E E E).
+Type T ::= (top ) | (arrow T T) | (int ) | (bool ) | (list T).
+Value V ::= (abs T1 R2) | (zero ) | (succ V1) | (tt ) | (ff ) | (emptyList ) | (cons V1 V2).
+Error ::= (myerror ).
+Context C ::= [] | (succ C) | (cons C e) | (cons v C) | (app C e) | (app v C) | (pred C) | (isZero C) | (if C e e) | (head C) | (tail C) | (fix C) | (composeFun C e e) | (composeFun v C e) | (composeFun v v C).
+
+Gamma |- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |- R : T2.
+Gamma |- (zero ) : (int ).
+Gamma |- (succ E) : (int ) <== Gamma |- E : (int ).
+Gamma |- (tt ) : (bool ).
+Gamma |- (ff ) : (bool ).
+Gamma |- (emptyList ) : (list T).
+Gamma |- (cons E1 E2) : (list T) <== Gamma |- E1 : T /\ Gamma |- E2 : (list T).
+Gamma |- (app E1 E2) : T2 <== Gamma |- E1 : (arrow T1 T2) /\ Gamma |- E2 : T1.
+Gamma |- (pred E) : (int ) <== Gamma |- E : (int ).
+Gamma |- (isZero E) : (bool ) <== Gamma |- E : (int ).
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+Gamma |- (head E) : T <== Gamma |- E : (list T).
+Gamma |- (tail E) : (list T) <== Gamma |- E : (list T).
+Gamma |- (fix E) : T <== Gamma |- E : (arrow T T).
+Gamma |- (myerror ) : T.
+Gamma |- (composeFun E1 E2 E3) : T3 <== Gamma |- E1 : T1 /\ Gamma |- E2 : (arrow T1 T2) /\ Gamma |- E3 : (arrow T2 T3).
+Gamma |a- (abs T1 R) : (arrow T1 T2) <== Gamma, x : T1 |a- R : T2.
+Gamma |a- (zero ) : (int ).
+Gamma |a- (succ E) : (int ) <== Gamma |a- E : (int ).
+Gamma |a- (tt ) : (bool ).
+Gamma |a- (ff ) : (bool ).
+Gamma |a- (emptyList ) : (list T).
+Gamma |a- (cons E1 E2) : (list T3) <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (list T2) /\ join T1 T2 T3.
+Gamma |a- (app E1 E2) : T2 <== Gamma |a- E1 : (arrow T1 T2) /\ Gamma |a- E2 : T3 /\ T3 <a T1.
+Gamma |a- (pred E) : (int ) <== Gamma |a- E : (int ).
+Gamma |a- (isZero E) : (bool ) <== Gamma |a- E : (int ).
+Gamma |a- (if E1 E2 E3) : T3 <== Gamma |a- E1 : (bool ) /\ Gamma |a- E2 : T1 /\ Gamma |a- E3 : T2 /\ join T1 T2 T3.
+Gamma |a- (head E) : T <== Gamma |a- E : (list T).
+Gamma |a- (tail E) : (list T) <== Gamma |a- E : (list T).
+Gamma |a- (fix E) : T2 <== Gamma |a- E : (arrow T1 T2) /\ T2 <a T1.
+Gamma |a- (myerror ) : T.
+Gamma |a- (composeFun E1 E2 E3) : T5 <== Gamma |a- E1 : T1 /\ Gamma |a- E2 : (arrow T2 T3) /\ Gamma |a- E3 : (arrow T4 T5) /\ T1 <a T2 /\ T3 <a T4.
+(top ) <a (top ).
+(arrow T1 T2) <a (arrow T1' T2') <== T1' <a T1 /\ T2 <a T2'.
+(arrow T1 T2) <a (top ).
+(int ) <a (int ).
+(int ) <a (top ).
+(bool ) <a (bool ).
+(bool ) <a (top ).
+(list T1) <a (list T1') <== T1 <a T1'.
+(list T1) <a (top ).
+join (top ) T (top ).
+join (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== meet T1 T3 T5 /\ join T2 T4 T6.
+join (arrow T1 T2) T (top ).
+join (int ) (int ) (int ).
+join (int ) T (top ).
+join (bool ) (bool ) (bool ).
+join (bool ) T (top ).
+join (list T1) (list T3) (list T5) <== join T1 T3 T5.
+join (list T1) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (arrow T1 T2) (arrow T1 T2).
+meet (top ) (int ) (int ).
+meet (top ) (bool ) (bool ).
+meet (top ) (list T1) (list T1).
+meet (arrow T1 T2) (arrow T3 T4) (arrow T5 T6) <== join T1 T3 T5 /\ meet T2 T4 T6.
+meet (arrow T1 T2) (top ) (arrow T1 T2).
+meet (int ) (int ) (int ).
+meet (int ) (top ) (int ).
+meet (bool ) (bool ) (bool ).
+meet (bool ) (top ) (bool ).
+meet (list T1) (list T3) (list T5) <== meet T1 T3 T5.
+meet (list T1) (top ) (list T1).
+(composeFun V1 V2 V3) --> (app V3 (app V2 V1)).
+(app (abs T R) V) --> R[V/x] <== value V.
+(let V R) --> R[V/x] <== value V.
+(pred (zero )) --> (myerror ).
+(pred (succ E)) --> E.
+(isZero (zero )) --> (tt ).
+(isZero (succ E)) --> (ff ).
+(if (tt ) E1 E2) --> E1.
+(if (ff ) E1 E2) --> E2.
+(head (emptyList )) --> (myerror ).
+(head (cons E1 E2)) --> E1.
+(tail (emptyList )) --> (myerror ).
+(tail (cons E1 E2)) --> E2.
+(fix E) --> (app E (fix E)) <== value E.
+(letrec T1 R1 R2) --> R2[(fix (abs T1 R1))/x].

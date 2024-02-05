@@ -1,0 +1,4 @@
+Theorem SubtypeA-transitive:
+ forall*, (Main1: subtypeA t1 t2) -> (Main2: subtypeA t2 t3) -> (_: subtypeA t1 t3).
+Proof.
+_: apply SubtypeA-transitive-double to. search

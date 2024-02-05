@@ -1,0 +1,48 @@
+Theorem Type-preservation : 
+	forall e1, forall e2, forall typ1, (Main : typeOf (empty) e1 typ1) -> (Step : step e1 e2) -> exists*, (_ :  typeOf (empty) e2 typ2) /\ (_: subtypeA typ2 typ1). 
+Proof. 
+(Typing _): induction on Main.  
+for each e in Expression: 
+    _: apply SubtypeA-reflexive to with t = typ1.
+	M_(e) : case Step. 
+	for each tg in targetsFromOp(e):
+        for each p in e.rule[|-].premises[join]:
+            _: apply Join-implies-subtypingA to (Typing p)
+        endfor.
+        _: case (Typing 0).
+        if containsSubstitution(tg) then skip else search endif
+    endfor.
+	for each tg in targetsFromValue(e):
+        for each p in e.rule[|-].premises[join]:
+            _: apply Join-implies-subtypingA to (Typing p)
+        endfor.
+        if containsSubstitution(tg) then skip else search endif
+    endfor.
+	for each i in contextualArgs(e):
+        (Derived _): apply IH0 to (Typing i) M_(e).
+        if isVar(getArgType(e, i)) then
+            (Transitivity i _): apply (Derived 1) to
+        else
+            (Transitivity i _): case (Derived 1)
+        endif.
+        for each p in e.rule[|-].premises[<a]:
+            if p.left in varsOf(getArgType(e, i)) then
+                _: apply SubtypeA-transitive to
+                    (Transitivity <= find p.left in e.rule[|-].premises[|-])
+                    (Typing p)
+            else noOp endif.
+            if p.right in varsOf(getArgType(e, i)) then
+                _: apply SubtypeA-transitive to
+                    (Typing p)
+                    (Transitivity <= find p.right in e.rule[|-].premises[|-])
+            else noOp endif
+        endfor.
+        search
+    endfor.
+	for each i in contextualArgs(e):
+        if isErrorHandler(e) and (i = 0) then noOp
+        else
+            _: apply Error-types-all to (Typing i) M_(e) with typ2 = typ1. search
+        endfor
+endfor
+

@@ -1,6 +1,8 @@
 # Lang-n-Prove: A Proof Language for Language Proofs
 
 Author: Matteo Cimini (matteo_cimini@uml.edu)
+
+Subtyping support: Seth Galasso (seth.galasso@gmail.com)
 	<br />
 # <a name="instructions"></a>Instructions 
 <br />
@@ -11,6 +13,11 @@ Requirements:
 <li> To compile and run: Ocaml with the Batteries and Menhir packages is required.
 <li> To test the output of Lang-n-Prove: the <a href="http://abella-prover.org">Abella proof assistant</a> is required.  
 </ul>
+
+You can install these dependencies in thier own Opam switch with this command:
+```
+opam switch import dependencies.txt --switch lnp && eval $(opam env)
+```
 
 Quick usage: 
 <br />

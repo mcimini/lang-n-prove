@@ -1,23 +1,34 @@
 open Batteries
 open String 
+open Language
 
 type var = string
 type name = string
 type predname = string
 type cname = string
 
+type member =
+    | Var of var
+    | Num of int
+    | Relation of predname
+    | Premises of string option
+    | PremisesIdx of predname
+
 type lnp_name = 
 	| String of string
 	| SuffixedString of string * evaluatedExpression
+    | Function of string * evaluatedExpression list
+    | ApplyFromList of string * evaluatedExpression
 and evaluatedExpression =
   | Var of var
   | Num of int 
   | Name of cname 
+  | Premise of int * Language.formula
   | Constructor of cname * evaluatedExpression list
   | ValuesOf of evaluatedExpression 
   | ValueArgs of evaluatedExpression 
   | OfType of evaluatedExpression 
-  | IsVar of evaluatedExpression (* not in use *)
+  | IsVar of evaluatedExpression
   | IsSingleValue of evaluatedExpression 
   | TargetV of evaluatedExpression 
   | TargetOp of evaluatedExpression 
@@ -33,7 +44,23 @@ and evaluatedExpression =
   | IS of evaluatedExpression * evaluatedExpression
   | OrTerm of evaluatedExpression * evaluatedExpression  
   | AndTerm of evaluatedExpression * evaluatedExpression  
-  
+  | Dot of evaluatedExpression * member
+  | Rule of Language.rule
+  | Formula of Language.formula
+  | Align of evaluatedExpression * evaluatedExpression * evaluatedExpression * evaluatedExpression
+  | Append of evaluatedExpression * evaluatedExpression
+  | Covariant of evaluatedExpression * evaluatedExpression
+  | FindVarInPremises of evaluatedExpression * evaluatedExpression
+  | VarsOf of evaluatedExpression
+  | TargetOfElimForm of evaluatedExpression * evaluatedExpression
+  | TargetOfErrorHandler of evaluatedExpression * evaluatedExpression
+  | HasEnvType of evaluatedExpression
+  | EnvType of evaluatedExpression
+  | FindSucceeds of evaluatedExpression * evaluatedExpression
+  | Range of evaluatedExpression
+  | Arity of evaluatedExpression
+  | ListDifference of evaluatedExpression * evaluatedExpression
+
 type formula =
   | Top
   | Bottom
@@ -49,6 +76,10 @@ type formula =
   | Imply of formula * formula
   | And of formula * formula
   | Or of formula * formula
+  | ExistStar of formula
+  | ForallStar of formula
+  | Let of var * evaluatedExpression * formula
+  | FVar of var
 
 
 type proof =
@@ -59,8 +90,9 @@ type proof =
   | Case of lnp_name * lnp_name 
   | CaseStar of lnp_name * lnp_name * proof (* not in use *)
   | Induction of lnp_name * lnp_name 
+  | MutualInduction of lnp_name * lnp_name * lnp_name * proof * proof
   | InductionStar of lnp_name * lnp_name * proof (* not in use *)
-  | Apply of lnp_name * lnp_name * lnp_name list
+  | Apply of lnp_name * lnp_name * lnp_name list * (var * var) option
   | Backchain of lnp_name 
   | If of evaluatedExpression * proof * proof
   | ForEachProof of var * evaluatedExpression * proof
@@ -117,22 +149,43 @@ let rec term_getVars exp = match exp with
 
 let term_getNthArg (Constructor(cname, ts)) n = List.nth ts n
 
+let rec term_hasBinding t : bool = match t with 
+	| Constructor(cname,ts) -> if cname = "expBinding" then true else List.exists term_hasBinding ts
+	| _ -> false
+
 let rec term_constains_substitution t : bool = match t with 
 	| Constructor(cname,ts) -> if cname = "substitution" then true else List.exists term_constains_substitution ts
 	| _ -> false
 
-	
-let term_list_mem exp listOfexps : bool = List.mem (term_getConstructorName exp) (List.map term_getConstructorName listOfexps)
+let term_stripIfConstructor exp = match exp with
+    | Constructor (cname, _) -> Constructor (cname, [])
+    | Var (_) -> exp
+
+let term_list_mem exp listOfexps : bool = List.mem (term_stripIfConstructor exp) (List.map term_stripIfConstructor listOfexps)
+
 let term_list_mem_upToNumbers exp listOfexps : bool = 
 	let foundItem = List.filter (fun t -> term_list_mem exp [t]) listOfexps in 
 	if foundItem = [] then false else let foundItem = List.hd foundItem in 
 	(* We also need to match E1 with R1.  *)
-	let equalupToNumbers (Var(var1),Var(var2)) : bool = 
+    let getVarName t = match t with
+        | Var v -> v
+        | Constructor ("expBinding", [Var v]) -> v
+        | Constructor ("typeBinding", [Var v]) -> v
+    in
+	let equalupToNumbers (t1, t2) : bool = 
+        let var1 = getVarName t1 in
+        let var2 = getVarName t2 in
 	(*	let t = raise(Failure("equalupToNumbers: " ^ var1 ^ (String.make 1 (String.get var1 0)) ^ var2 ^ (String.make 1 (String.get var2 0)) ^ (string_of_bool (String.starts_with var2 "R"))))  in 
 String.get var1 0 = String.get var2 0 || String.get var1 0 = 'R' || String.get var2 1 = 'R') in *)
 			(String.starts_with var1 "R" || String.starts_with var1 (String.make 1 (String.get var2 0)) || 
 			 String.starts_with var2 "R" || String.starts_with var2 (String.make 1 (String.get var1 0))) in  
 		List.for_all equalupToNumbers (List.combine (term_getArguments exp) (term_getArguments foundItem))
+
+let constr_unify (Constr(c1, args1)) (Constr(c2, args2)) =
+    if (c1 <> c2) then begin
+        raise (Failure("Can't unify " ^ c1 ^ " constructor with " ^ c2 ^ " constructor."))
+    end;
+    List.map2 (fun (LangVar(a)) (LangVar(b)) -> (a, LangVar(b))) args1 args2
 
 let numberToNumTerm n = Num n 
 
@@ -141,6 +194,81 @@ let rec map_names_formulae_in_theorem formula = match formula with
 	| Formula(String s, predname, ts) -> if s = "_" then [] else [(s, Formula(String s, predname, ts))]
 	| Imply(formula1, formula2) -> map_names_formulae_in_theorem formula1 @ map_names_formulae_in_theorem formula2
 	| Forall(var, formula) -> map_names_formulae_in_theorem formula
+	| ForallStar(formula) -> map_names_formulae_in_theorem formula
 	| Exists(var, formula) -> map_names_formulae_in_theorem formula
+	| ExistStar(formula) -> map_names_formulae_in_theorem formula
+    | And(formula1, formula2) -> map_names_formulae_in_theorem formula1 @ map_names_formulae_in_theorem formula2
 	| _ -> []
 
+let rec langConstructor_to_LNPConstructor (termFromLanguage : term) : evaluatedExpression = match termFromLanguage with 
+	| Constr(cname, ts) -> Constructor(cname, List.map langConstructor_to_LNPConstructor ts) 
+	| LangVar(var) -> Var(var)
+    | Abs(t) -> Constructor("expBinding", [langConstructor_to_LNPConstructor t])
+    | BoundVar -> Var("x")
+    | AbsType(t) -> Constructor("typeBinding", [langConstructor_to_LNPConstructor t])
+	| Substitution(t1,t2,t3) -> Constructor("substitution", [])
+	(* | _ -> raise(Failure(dump termFromLanguage))*)
+
+let formula_of_exp ((Formula((Formula(pred, args)): Language.formula)): evaluatedExpression): formula =
+    let expList = List.map langConstructor_to_LNPConstructor args in
+    Formula(String("_"), pred, expList)
+
+(* expect formula is already compiled *)
+let rec formula_free_vars (formula: formula): var list =
+    removeDuplicates begin
+    match formula with
+    | Top -> []
+    | Bottom -> []
+    | Formula(lnp_name, predname, ts) ->
+        let ts = if predname = "typeOf" && not explicit_tenv then List.tl ts else ts in
+        List.concat (List.map term_getVars ts)
+    | Forall(var2, formula) -> list_difference (formula_free_vars formula) [var2]
+	| Exists(var2, formula) -> list_difference (formula_free_vars formula) [var2]
+	| ForallVars(t, formula) -> assert false
+	| ExistsVars(t, formula) -> assert false
+	| EqualFormula(t1, t2) -> (term_getVars t1) @ (term_getVars t2)
+	| OrMacro(var2, t, formula) -> assert false
+	| AndMacro(var2, t, formula) -> assert false
+	| ImplyMacro(var2, t, formula) -> assert false
+	| Imply(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+	| And(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+	| Or(formula1, formula2) -> (formula_free_vars formula1) @ (formula_free_vars formula2)
+    | ExistStar(formula) -> []
+    | ForallStar(formula) -> []
+    | Let(var, t, formula) -> assert false
+    | FVar(var) -> assert false
+    end
+
+(* Add more cases as needed *)
+let rec names_to_vars evalExp = match evalExp with
+    | Var (_) -> evalExp
+    | Name (cname) -> Var (cname)
+    | Constructor (cname, args) -> Constructor (cname, List.map names_to_vars args)
+    | Dot (evalExp, mem) -> Dot (names_to_vars evalExp, mem)
+    | GetArgs (t1, t2) -> GetArgs (names_to_vars t1, names_to_vars t2)
+
+let rec formulaEnvType evalExp =
+    match evalExp with
+    | Premise (_, formula) -> formulaEnvType (Formula formula)
+    | (Formula (Language.Formula(predname, env :: _)): evaluatedExpression)
+        when (predname = "typeOf") || (predname = "typeOfA") -> begin
+            match env with
+            | Constr ("gammaAddx", [typ]) -> Some typ
+            | _ -> None
+    end
+
+let formulaFind (var: string) (premises: Language.formula list): (evaluatedExpression list) option =
+    let rec find (var: string) (term: evaluatedExpression) (coords: evaluatedExpression list): evaluatedExpression list option =
+        match term with
+        | Var v when v = var -> Some (coords)
+        | Var _ | Constructor(_, []) -> None
+        | Constructor(_, args) -> begin
+            let results = args |> List.mapi (fun i arg -> find var arg (coords @ [Num i])) in
+            match List.find_opt Option.is_some results with
+            | None -> None
+            | Some (Some c)-> Some c
+        end
+    in
+    let prems = premises |> List.map (fun prem -> formula_getArguments prem |> List.last |> langConstructor_to_LNPConstructor) in
+    let top = Constructor ("c", prems) in
+    find var top []

@@ -22,14 +22,26 @@ rule token = parse
   | "for"               { FOR }
   | "each"               { EACH }
   | "in"           { IN }
+  | "inn"           { INN }
   | ","               { COMMA }
   | "Theorem"               { THEOREM }
   | "_"            { UNDERSCORE }
   | "("             { LPAREN }
   | ")"             { RPAREN }
+  | "["             { LSQUARE }
+  | "]"             { RSQUARE }
   | ":"               { COLON }
+  | "forall*"              { FORALLSTAR }
   | "forall"               { FORALL }
   | "."               { DOT }
+  | "premises"        { PREMISES }
+  | "premisesIdx"     { PREMISESIDX }
+  | "rule"            { RULE }
+  | "<:" { SUBTYPING }
+  | "<a" { SUBTYPINGA }
+  | "|-" { TURNSTYLE }
+  | "|a-" { TURNSTYLEA }
+  | "-->" { STEP }
   | "forallVars"               { FORALLVARS }
   | "->"            { IMPLY }
   | "OR"               { ORMACRO }
@@ -57,10 +69,14 @@ rule token = parse
   | "then"            { THEN }
   | "else"            { ELSE }
   | "noOp"            { NOP }
+  | "exists*"               { EXISTSTAR }
   | "exists"               { EXISTS }
+  | "mutual"               { MUTUAL }
   | "induction"            { INDUCTION }
   | "induction*"            { INDUCTIONSTAR }
   | "on"             { ON }
+  | "first"          { FIRST }
+  | "second"         { SECOND }
   | "endfor"               { ENDFOR }
   | "apply"             { APPLY }
   | "to"             { TO }
@@ -80,6 +96,23 @@ rule token = parse
   | "endIMPLY"               { ENDIMPLY }
   | "endif"               { ENDIF }
   | "skip"               { SKIP }
+  | "let"       { LET }
+  | "align"     { ALIGN }
+  | "where"     { WHERE }
+  | "append"    { APPEND }
+  | "covariant" { COVARIANT }
+  | "<="        { REVERSEIMPLY }
+  | "find"      { FIND }
+  | "varsOf"    { VARSOF }
+  | "with"      { WITH }
+  | "targetOfElimForm" { TARGETOFELIMFORM }
+  | "targetOfErrorHandler" { TARGETOFERRORHANDLER }
+  | "hasEnvType"    { HASENVTYPE }
+  | "envType"       { ENVTYPE }
+  | "findSucceeds"  { FINDSUCCEEDS }
+  | "range"         { RANGE }
+  | "arity"         { ARITY }
+  | "-"             { MINUS }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | name             { NAME (Lexing.lexeme lexbuf) }
   | ['0'-'9']+ as i { INT (int_of_string i) }  

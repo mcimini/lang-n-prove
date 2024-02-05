@@ -1,0 +1,26 @@
+Top ::= (top ).
+Subtyping S ::= (bool ).
+Expression E ::= x | (tt ) | (ff ) | (if E E E).
+Type T ::= (top ) | (bool ).
+Value V ::= (tt ) | (ff ).
+Error ::= .
+Context C ::= [] | (if C e e).
+
+Gamma |- (tt ) : (bool ).
+Gamma |- (ff ) : (bool ).
+Gamma |- (if E1 E2 E3) : T <== Gamma |- E1 : (bool ) /\ Gamma |- E2 : T /\ Gamma |- E3 : T.
+Gamma |a- (tt ) : (bool ).
+Gamma |a- (ff ) : (bool ).
+Gamma |a- (if E1 E2 E3) : T3 <== Gamma |a- E1 : (bool ) /\ Gamma |a- E2 : T1 /\ Gamma |a- E3 : T2 /\ join T1 T2 T3.
+(top ) <a (top ).
+(bool ) <a (bool ).
+(bool ) <a (top ).
+join (top ) T (top ).
+join (bool ) (bool ) (bool ).
+join (bool ) T (top ).
+meet (top ) (top ) (top ).
+meet (top ) (bool ) (bool ).
+meet (bool ) (bool ) (bool ).
+meet (bool ) (top ) (bool ).
+(if (tt ) E1 E2) --> E1.
+(if (ff ) E1 E2) --> E2.

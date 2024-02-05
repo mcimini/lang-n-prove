@@ -4,13 +4,13 @@
 
 %token <string> VARLEX
 %token <string> VARTERM
-%token <int> INT
-%token GRAMMARASSIGN
+%token <int> INT %token GRAMMARASSIGN
 %token MID
 %token COMMA
 %token PROVIDED
 %token COLON
 %token TURNSTYLE
+%token TURNSTYLEA
 %token AND
 %token LEFTPAR  
 %token RIGHTPAR 
@@ -28,6 +28,9 @@
 %token VALUEPRED 
 %token DIRECTIVE 
 %token SUBTYPING 
+%token SUBTYPINGA
+%token JOIN
+%token MEET
  
 
 %left EXEC
@@ -78,10 +81,18 @@ rule :
 formula : 
   | gammaTerm = assumption TURNSTYLE t1 = term COLON t2 = term
     { Formula("typeOf", [gammaTerm ; t1 ; t2]) }
+  | gammaTerm = assumption TURNSTYLEA t1 = term COLON t2 = term
+    { Formula("typeOfA", [gammaTerm ; t1 ; t2]) }
   | t1 = term STEP t2 = term 
     { Formula("step", [t1 ; t2]) }
+  | t1 = term SUBTYPINGA t2 = term 
+    { Formula("subtypeA", [t1 ; t2]) }
   | VALUEPRED t = term 
 	{ Formula("value", [t]) }
+  | JOIN t1 = term t2 = term t3 = term
+    { Formula("join", [t1; t2; t3]) }
+  | MEET t1 = term t2 = term t3 = term
+    { Formula("meet", [t1; t2; t3]) }
 
 assumption : 
   | GAMMA 
@@ -92,10 +103,10 @@ assumption :
 	{ Constr("gammaAddX", []) }
 
 grammarLine : 
-	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN ts = separated_list(MID, term)	
-	{ GrammarLine(category,metavar, Some ts) }
-	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN EMPTYCTX MID ts = option(separated_list(MID, term))	
-	{ if category = "C" then GrammarLine("Context",Some "C",ts) else GrammarLine(category,metavar,ts) }
+	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN ts = option(separated_list(MID, term)) DOT
+	{ GrammarLine(category,metavar, ts) }
+	| category = VARTERM metavar = option(VARTERM) GRAMMARASSIGN EMPTYCTX MID ts = option(separated_list(MID, term)) DOT
+	{ GrammarLine(category,metavar,ts) }
 
 directives : 
 	| DIRECTIVE list(tagInfo) DOT	

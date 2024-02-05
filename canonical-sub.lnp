@@ -1,0 +1,12 @@
+for each ty in Type - Top, Theorem Canonical-form-_(ty) :
+	forall e, forallVars(ty), (Main : typeOf (empty) e ty) -> (ValHyp : value e)
+		-> OR(v in valuesOf(ty)): existsVars(v), (e = v) /\ AND(arg in valueArgs(v)): (_ : value arg).
+Proof. 
+Typing_(0): induction on Main.
+for each e in Expression: 
+	if (ty = ofType(e)) or isVar(ofType(e)) 
+		then if e is Value then search else if e in Value then M_(e) : case ValHyp. search else M_(e) : case ValHyp 
+		else noOp
+endfor.
+_ : apply Inversion-subtype-_(ty) to Typing_(1).
+backchain on IH_(0)

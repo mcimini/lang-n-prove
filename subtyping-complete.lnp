@@ -1,0 +1,12 @@
+Theorem Subtyping-complete: forall*, (Subtype: subtype t1 t2) -> (_: subtypeA t1 t2).
+Proof.
+Subtype_(0): induction on Subtype.
+backchain on SubtypeA-top.
+for each ty in Type - Top:
+    for each i in ty.rule[<:].premisesIdx[<:]: Foo: apply IH0 to Subtype_(i) endfor.
+    search
+endfor.
+backchain on SubtypeA-reflexive.
+_: apply IH0 to Subtype0.
+_: apply IH0 to Subtype1.
+backchain on SubtypeA-transitive
