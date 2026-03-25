@@ -2,7 +2,7 @@
 
 Author: Matteo Cimini (matteo_cimini@uml.edu)
 
-Subtyping support: Seth Galasso (seth.galasso@gmail.com)
+Subtyping support: Tess Galasso 
 	<br />
 # <a name="instructions"></a>Instructions 
 <br />
